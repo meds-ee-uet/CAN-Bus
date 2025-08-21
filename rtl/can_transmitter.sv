@@ -167,7 +167,7 @@ module can_transmitter (
             tx_state_next = STATE_DATA;
             rd_tx_data_byte = 1'b1;  // request first byte
             tx_byte_cnt_next = 0;
-            tx_bit_cnt_next = 7;     // 7 downto 0
+            tx_bit_cnt_next = 7;     
             tx_data_byte_next = tx_frame_local.data[0];
           end
         end else

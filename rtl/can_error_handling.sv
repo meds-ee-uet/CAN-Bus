@@ -84,18 +84,12 @@ assign success_tx = sample_point & tx_active & !(bit_error || form_error || ack_
 assign success_rx = sample_point & !tx_active & !(bit_error ||form_error || stuff_error || crc_error);
 
 always_ff @(posedge clk or negedge rst) begin
-    if (!rst)
+    if (!rst)begin
         rx_bit_curr <= 1'b1;
-    else 
-        rx_bit_curr <= rx_bit;
-end
-
-
-always_ff @(posedge clk or negedge rst )begin
-    if(!rst)begin
-        rx_bit_prev <= 1;
+         rx_bit_prev <= 1;
     end else begin
-        rx_bit_prev <= rx_bit;
+         rx_bit_curr <= rx_bit;
+         rx_bit_prev <= rx_bit_curr;
     end
 end
 

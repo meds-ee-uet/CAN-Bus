@@ -53,24 +53,30 @@ This module supports both ***standard (11-bit ID)*** and ***extended (29-bit ID)
 ---
 
 #### ***Inputs***
+## CAN Transmitter Input Signals
 
-| Signal             | Width     | Description |
-|--------------------|-----------|-------------|
-| `clk`              | 1         | System clock. |
-| `rst_n`            | 1         | Active-low asynchronous reset. |
-| `sample_point`     | 1         | Indicates the bit sampling point in the CAN bit time. |
-| `start_tx`         | 1         | Trigger signal to start transmission. |
-| `tx_remote_req`    | 1         | If `1`, sends a remote frame (no data field). |
-| `tx_id_std`        | 11        | Standard frame identifier (used in both standard and extended frames). |
-| `tx_id_ext`        | 18        | Extended identifier bits (used only if `tx_ide = 1`). |
-| `tx_ide`           | 1         | Identifier Extension bit: `0` = standard frame, `1` = extended frame. |
-| `tx_rtr1`          | 1         | Remote Transmission Request bit for standard ID. |
-| `tx_rtr2`          | 1         | Remote Transmission Request bit for extended ID. |
-| `tx_dlc`           | 4         | Data Length Code (number of data bytes, 0–8). |
-| `tx_crc`           | 15        | Pre-computed 15-bit CRC value. |
-| `tx_data[0:7]`     | 8×8       | Data bytes to be transmitted (up to 8 bytes). |
+| Name           | Direction | Width | Description |
+|----------------|-----------|-------|-------------|
+| `clk`          | Input     | 1     | System clock used to synchronize the transmitter FSM. |
+| `rst_n`        | Input     | 1     | Active-low reset to initialize the module. |
+| `sample_point` | Input     | 1     | Indicates when to sample and shift bits according to CAN timing. |
+| `start_tx`     | Input     | 1     | Starts the transmission of a CAN frame. |
 
----
+### CAN Data Bytes
+
+| Name        | Direction | Width | Description |
+|-------------|-----------|-------|-------------|
+| `tx_data_0` | Input     | 8     | Frame identifier and control bits (upper). |
+| `tx_data_1` | Input     | 8     | Frame identifier and DLC bits (lower). |
+| `tx_data_2` | Input     | 8     | Data payload byte 0. |
+| `tx_data_3` | Input     | 8     | Data payload byte 1. |
+| `tx_data_4` | Input     | 8     | Data payload byte 2. |
+| `tx_data_5` | Input     | 8     | Data payload byte 3. |
+| `tx_data_6` | Input     | 8     | Data payload byte 4. |
+| `tx_data_7` | Input     | 8     | Data payload byte 5. |
+| `tx_data_8` | Input     | 8     | Data payload byte 6. |
+| `tx_data_9` | Input     | 8     | Data payload byte 7. |
+
 
 #### ***Outputs***
 
@@ -488,6 +494,11 @@ This module compares the incoming CAN ID with configured acceptance codes, using
     - `rx_id` is the concatenation of `id_std` (11 bits) and `id_ext` (18 bits) → total 29 bits.
     - Acceptance code and mask are taken from all four bytes, with the last byte using only its upper 5 bits.
 
+#### ***Design Diagram***
+
+<div align="center">
+  <img src="./images_design/filtering.jpg" width="600" height="400">
+</div>
 ### ***`CAN_CRC_gen`*** Module
 
 #### ***Overview***
@@ -531,7 +542,11 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
   - All other bits shift down normally.
 - The `crc_init` input resets the CRC register to zero at the beginning of a new frame.
 - The final CRC value is available on `crc_out` and can be transmitted at the end of the frame.
+#### ***Design Diagram***
 
+<div align="center">
+  <img src="./images_design/crc.jpg" width="600" height="400">
+</div>
 ---
 
 

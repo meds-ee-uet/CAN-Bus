@@ -550,6 +550,69 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
 </div>
 ---
 
+### ***Error HAndling Module `(can_error_handling)`***
+
+## Overview
+The `can_error_detection` module implements **fault confinement** for a CAN bus controller.  
+It detects protocol violations (bit, stuff, form, ACK, and CRC errors), updates **Transmit Error Counter (TEC)** and **Receive Error Counter (REC)**  and determines the node’s error state (`error_active`, `error_passive`, `bus_off`).
+
+
+#### ***Inputs***
+
+| Signal                | Width | Description                                                   |
+|------------------------|-------|---------------------------------------------------------------|
+| `clk`                 | 1     | System clock                                                  |
+| `rst`                 | 1     | Active-low reset                                              |
+| `rx_bit`              | 1     | Bit received from CAN bus                                     |
+| `tx_bit`              | 1     | Bit being transmitted by this node                            |
+| `tx_active`           | 1     | High when node is actively transmitting                       |
+| `sample_point`        | 1     | Indicates sampling instant for CAN bit timing                 |
+| `bit_de_stuffing_ff`  | 1     | Helper signal for stuff-bit removal logic                     |
+| `remove_stuff_bit`    | 1     | High when current bit should be removed as stuff bit          |
+| `rx_bit_curr`         | 1     | Registered version of `rx_bit` (current cycle)                |
+| `rx_bit_prev`         | 1     | Registered version of `rx_bit` (previous cycle)               |
+| `in_arbitration`      | 1     | High during arbitration field (bit error exception applies)   |
+| `in_ack_slot`         | 1     | High during ACK slot (bit error exception applies)            |
+
+#### ***Outputs***
+
+| Signal          | Width | Description                                           |
+|-----------------|-------|-------------------------------------------------------|
+| `stuff_error`   | 1     | High when stuff error is detected                     |
+| `crc_error`     | 1     | High when CRC check fails                             |
+| `form_error`    | 1     | High when form error is detected                      |
+| `ack_error`     | 1     | High when acknowledgment error occurs                 |
+| `tec`           | 8     | Transmit Error Counter                                |
+| `rec`           | 8     | Receive Error Counter                                 |
+| `error_active`  | 1     | Node is in error-active state                         |
+| `error_passive` | 1     | Node is in error-passive state                        |
+| `bus_off`       | 1     | Node is bus-off (disconnected from CAN network)       |
+
+#### ***Functionality***
+
+- **Error Detection Logic**  
+  - On each `sample_point`, the module compares `tx_bit` with `rx_bit` to detect **bit errors** (except during arbitration and ACK slot).  
+  - It monitors `bit_de_stuffing_ff` and `remove_stuff_bit` to detect **stuffing violations** when six identical bits appear without a stuff bit.  
+  - CRC check results (`crc_rx_match`) set **CRC error** if mismatch occurs when `crc_check_done` is high.  
+  - Fixed-form fields (`in_crc_delimiter`, `in_ack_delimiter`, `in_eof`) are checked for recessive bits; any dominant bit there triggers a **form error**.  
+  - In the ACK slot, if the transmitter sees a recessive `rx_bit`, it sets an **ACK error**.
+
+- **Error Counter Updates (TEC & REC)**  
+  - When a transmit error is flagged, **TEC increases by 8** (capped at 255).  
+  - When a receive error occurs, **REC increases by 1** (capped at 255).  
+  - A run of **14 consecutive dominant bits** increments both TEC and REC by 8.  
+  - **Dominant bits after error flag** increment REC by 8.  
+  - Successful transmissions decrement **TEC by 1**, and successful receptions decrement **REC by 1** (not below 0).
+
+- **Error State**  
+  - If `tec < 128` and `rec < 128` → Node stays **Error Active**.  
+  - If `tec ≥ 128` or `rec ≥ 128` → Node transitions to **Error Passive** (cannot actively signal errors).  
+  - If `tec ≥ 255` → Node enters **Bus Off** state, meaning it is disconnected from the bus.  
+
+---
+
+ 
+
 
 
 

@@ -229,7 +229,7 @@ Here is the FSM for receiver:
   <img src="./images_design/rx_fsm.jpg" width="400" height="500">
 </div>
 
-### ***`CAN_Bit_Stuffer`*** Module
+### ***`CAN_Bit_Stuffer` Module***
 
 #### ***Overview***
 The `can_bit_stuffer` module implements ***bit stuffing*** logic for a CAN (Controller Area Network) transmitter.  
@@ -264,7 +264,7 @@ When the module detects ***five consecutive identical bits***, it automatically 
 
 ---
 
-### ***`CAN_Bit_Destuffer`*** Module
+### ***`CAN_Bit_Destuffer`Module*** 
 
 #### ***Overview***
 The `can_bit_destuffer` module implements ***bit de-stuffing*** logic for a CAN receiver.  
@@ -448,7 +448,7 @@ It maintains a sorted list of pending CAN messages, always transmitting the fram
   <img src="./images_design/pirority_module.jpg" width="600" height="400">
 </div>
 
-### ***`CAN_Filtering`*** Module 
+### ***`CAN_Filtering` Module ***
 
 #### ***Overview***
 The `can_filtering` module implements ***CAN frame acceptance filtering*** based on the ***Acceptance Code*** and ***Acceptance Mask*** registers.  
@@ -499,7 +499,8 @@ This module compares the incoming CAN ID with configured acceptance codes, using
 <div align="center">
   <img src="./images_design/filtering.jpg" width="600" height="400">
 </div>
-### ***`CAN_CRC_gen`*** Module
+
+### ***`CAN_CRC_gen` Module***
 
 #### ***Overview***
 The `can_crc15_gen` module implements a ***15-bit CRC generator*** for the CAN (Controller Area Network) protocol.  

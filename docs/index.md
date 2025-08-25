@@ -43,7 +43,7 @@ Each submodule below contributes to a specific stage of CAN frame transmission a
 
 10. ***can_timing***
 
-### ***Transmitter Module*** `(can_transmitter)`
+### ***CAN Transmitter Module*** [`can_transmitter`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_transmitter.sv)
 
 #### ***Description***
 The `can_transmitter` module handles the bit-level serialization of a CAN frame according to the CAN 2.0A/B protocol. It implements a finite state machine (FSM) that transitions through each field of the frame — from Start of Frame (SOF) to Interframe Space (IFS) — and generates a single `tx_bit` at each sample point on the CAN bus.

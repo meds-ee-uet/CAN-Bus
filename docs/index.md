@@ -508,8 +508,6 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
 
 ---
 
-#### **Interface**
-
 #### ***Inputs***
 
 | Signal     | Width | Description                                                                 |
@@ -549,8 +547,6 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
 #### ***Overview***
 The `can_error_detection` module implements **fault confinement** for a CAN bus controller.  
 It detects protocol violations (bit, stuff, form, ACK, and CRC errors), updates **Transmit Error Counter (TEC)** and **Receive Error Counter (REC)**  and determines the node’s error state (`error_active`, `error_passive`, `bus_off`).
-
-#### ***Interface***
 
 #### ***Inputs***
 

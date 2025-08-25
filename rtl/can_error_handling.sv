@@ -98,7 +98,7 @@ always_ff @(posedge clk or negedge rst)begin
     if(!rst)begin
         dominant_count <=0;
         flag_fourteen <=0;
-    end else if(rx_bit_prev==0 && rx_bit ==0)begin
+    end else if(rx_bit_prev==0 && rx_bit_curr==0)begin
           dominant_count <= dominant_count + 1;
           if (dominant_count==14)begin
              flag_fourteen <=1;

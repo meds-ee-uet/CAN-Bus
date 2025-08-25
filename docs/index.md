@@ -43,7 +43,7 @@ Each submodule below contributes to a specific stage of CAN frame transmission a
 
 10. ***can_timing***
 
-### ***CAN Transmitter Module*** (`can_transmitter`)
+### ***Transmitter Module*** `(can_transmitter)`
 
 #### ***Description***
 The `can_transmitter` module handles the bit-level serialization of a CAN frame according to the CAN 2.0A/B protocol. It implements a finite state machine (FSM) that transitions through each field of the frame — from Start of Frame (SOF) to Interframe Space (IFS) — and generates a single `tx_bit` at each sample point on the CAN bus.
@@ -53,7 +53,7 @@ This module supports both ***standard (11-bit ID)*** and ***extended (29-bit ID)
 ---
 
 #### ***Inputs***
-## CAN Transmitter Input Signals
+
 
 | Name           | Direction | Width | Description |
 |----------------|-----------|-------|-------------|
@@ -62,7 +62,7 @@ This module supports both ***standard (11-bit ID)*** and ***extended (29-bit ID)
 | `sample_point` | Input     | 1     | Indicates when to sample and shift bits according to CAN timing. |
 | `start_tx`     | Input     | 1     | Starts the transmission of a CAN frame. |
 
-### CAN Data Bytes
+####  ***Data Bytes***
 
 | Name        | Direction | Width | Description |
 |-------------|-----------|-------|-------------|
@@ -113,20 +113,12 @@ This module supports both ***standard (11-bit ID)*** and ***extended (29-bit ID)
 
 ---
 
-#### ***Design Behavior***
+#### ***Functionality***
 
 - Frame transmission starts when `start_tx` is asserted and `sample_point` is high.
 - Bit and byte counters track field progress in each state.
 - CRC must be calculated externally and provided via `tx_crc`.
 - FSM resets on `rst_n`.
-
----
-
-#### ***Design Notes***
-
-- Compliant with CAN 2.0A and 2.0B.
-- `sample_point` ensures correct synchronization with CAN timing.
-- Suitable for use in a complete CAN controller with separate arbitration/error FSMs.
 
 ---
 
@@ -144,7 +136,7 @@ Here is the FSM for transmitter:
   <img src="./images_design/tx_fsm.jpg" width="400" height="500">
 </div>
 
-### ***CAN Receiver Module*** (`can_receiver`)
+### ***Receiver Module*** `(can_receiver)`
 
 #### ***Description***
 The `can_receiver` module receives and decodes a CAN frame bit-by-bit at each sampling point (`rx_point`). It reconstructs the full frame according to the CAN 2.0A/B protocol, supporting both ***standard (11-bit ID)*** and ***extended (29-bit ID)*** formats. It outputs all parsed fields of the CAN frame, including identifiers, control bits, data, and CRC, and signals completion with `rx_done`.
@@ -198,7 +190,7 @@ The `can_receiver` module receives and decodes a CAN frame bit-by-bit at each sa
 
 ---
 
-####  ***Design Behavior***
+####  ***Functionality***
 
 - Each `rx_bit_cuurent` is shifted into internal registers when `sample_point` is high.
 - Frame fields (IDs, DLC, data, CRC) are parsed and saved.
@@ -229,15 +221,15 @@ Here is the FSM for receiver:
   <img src="./images_design/rx_fsm.jpg" width="400" height="500">
 </div>
 
-### ***`CAN_Bit_Stuffer` Module***
+### ***Bit Stuffing Module*** `(can_bit_stuff)`
 
-#### ***Overview***
+#### ***Description***
 The `can_bit_stuffer` module implements ***bit stuffing*** logic for a CAN (Controller Area Network) transmitter.  
 Bit stuffing ensures that no more than five consecutive identical bits are sent, preserving synchronization between transmitter and receiver.
 
 When the module detects ***five consecutive identical bits***, it automatically inserts a complementary bit (stuffed bit) into the transmitted stream.
 
-#### ***Interface***
+
 
 #### ***Inputs***
 
@@ -264,9 +256,9 @@ When the module detects ***five consecutive identical bits***, it automatically 
 
 ---
 
-### ***`CAN_Bit_Destuffer`Module*** 
+### ***Destuffing Module*** `(can_bit_destuff)`
 
-#### ***Overview***
+#### ***Description***
 The `can_bit_destuffer` module implements ***bit de-stuffing*** logic for a CAN receiver.  
 It detects and flags stuffed bits so the higher-level receiver logic can skip them, reconstructing the original transmitted data.
 
@@ -311,31 +303,37 @@ Here is the Datapath of bit de-stuffing:
   <img src="./images_design/de_stuffing.jpg" width="600" height="500">
 </div>
 
-### ***CAN Arbitration Module***
+### ***Arbitration Module*** `(can_arbitration)`
 
-#### ***Overview***
+#### ***Description***
 
 The `can_arbitration` module is responsible for detecting arbitration loss in a Controller Area Network (CAN) protocol. Arbitration occurs during the ID field of a CAN frame when multiple nodes may attempt to transmit simultaneously. Arbitration loss is detected when a transmitter sends a recessive bit (`1`) but sees a dominant bit (`0`) on the bus, indicating another node with a higher priority is transmitting.
 
 ---
 
-#### ***Functionality***
+## Inputs
 
-This module monitors the transmitted (`tx_bit`) and received (`rx_bit`) bits during the arbitration phase. If the node transmits a recessive bit but receives a dominant bit at a `sample_point` during the active arbitration phase, the module flags this as an arbitration loss.
+| Signal              | Width | Description                                                                 |
+|---------------------|-------|-----------------------------------------------------------------------------|
+| `clk`               | 1     | System clock                                                                |
+| `rst_n`             | 1     | Active-low reset                                                            |
+| `tx_bit`            | 1     | Bit transmitted by this node                                                |
+| `rx_bit`            | 1     | Bit received from CAN bus                                                   |
+| `sample_point`      | 1     | Sampling strobe for arbitration check                                       |
+| `arbitration_active`| 1     | Indicates whether the controller is in the arbitration phase                 |
 
 ---
 
-#### ***Port Description***
+## Outputs
 
-| Signal Name        | Direction | Width | Description                                                                 |
-|--------------------|-----------|--------|-----------------------------------------------------------------------------|
-| `clk`              | Input     | 1      | System clock                                                                |
-| `rst_n`            | Input     | 1      | Active-low synchronous reset                                                |
-| `tx_bit`           | Input     | 1      | Transmitted bit (0 = dominant, 1 = recessive)                               |
-| `rx_bit`           | Input     | 1      | Received bit from CAN bus                                                   |
-| `sample_point`     | Input     | 1      | Indicates a valid sampling point for comparison                             |
-| `arbitration_active` | Input   | 1      | High during the arbitration field (usually during the ID field)            |
-| `arbitration_lost` | Output    | 1      | High when arbitration loss is detected                                     |
+| Signal              | Width | Description                                                                 |
+|---------------------|-------|-----------------------------------------------------------------------------|
+| `arbitration_lost`  | 1     | Asserted high when node loses arbitration (Tx = recessive, Rx = dominant)   ||
+---
+
+#### ***Functionality***
+
+This module monitors the transmitted (`tx_bit`) and received (`rx_bit`) bits during the arbitration phase. If the node transmits a recessive bit but receives a dominant bit at a `sample_point` during the active arbitration phase, the module flags this as an arbitration loss.
 
 ---
 
@@ -351,11 +349,6 @@ This module monitors the transmitted (`tx_bit`) and received (`rx_bit`) bits dur
 
 ---
 
-#### ***Usage***
-
-This module is used in CAN transmitters to detect if they have lost arbitration and should back off from transmission to allow a higher-priority frame to continue uninterrupted.
-
----
 
 #### ***Arbitration Design Diagram***
 
@@ -363,8 +356,10 @@ This module is used in CAN transmitters to detect if they have lost arbitration 
   <img src="./images_design/Arbitration.jpg" width="600" height="400">
 </div>
 
-### ***`CAN_tx_priority`***
- 
+### ***Priority Module*** `(can_tx_priority)`
+
+#### ***Description***
+
 The `can_tx_priority` module implements a ***priority-based CAN transmit request buffer***.  
 It maintains a sorted list of pending CAN messages, always transmitting the frame with the ***lowest CAN ID*** (highest priority) first.
 
@@ -412,7 +407,7 @@ It maintains a sorted list of pending CAN messages, always transmitting the fram
 
 ---
 
-####  ***Operation***
+####  ***Functionality***
 
 ##### Write Operation
 - When `we` is asserted and the buffer is ***not full***, a new CAN frame is inserted.
@@ -448,17 +443,15 @@ It maintains a sorted list of pending CAN messages, always transmitting the fram
   <img src="./images_design/pirority_module.jpg" width="600" height="400">
 </div>
 
-### ***`CAN_Filtering` Module ***
+### ***Filtering Module*** `(can_filtering)`
 
-#### ***Overview***
+#### ***Description***
 The `can_filtering` module implements ***CAN frame acceptance filtering*** based on the ***Acceptance Code*** and ***Acceptance Mask*** registers.  
 It supports both ***Standard (11-bit)*** and ***Extended (29-bit)*** CAN identifiers, allowing the receiver to accept or reject frames before processing.
 
 This module compares the incoming CAN ID with configured acceptance codes, using masks to selectively enable or disable bit comparisons.
 
 ---
-
-#### ***Interface***
 
 #### ***Inputs***
 
@@ -500,9 +493,10 @@ This module compares the incoming CAN ID with configured acceptance codes, using
   <img src="./images_design/filtering.jpg" width="600" height="400">
 </div>
 
-### ***`CAN_CRC_gen` Module***
+### ***CRC Module*** `(can_crc15_gen)`
 
-#### ***Overview***
+#### ***Description***
+
 The `can_crc15_gen` module implements a ***15-bit CRC generator*** for the CAN (Controller Area Network) protocol.  
 It processes incoming data bits in real time and updates the CRC register using the CAN polynomial:
 
@@ -552,10 +546,11 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
 
 ### ***Error Handling Module `(can_error_handling)`***
 
-## Overview
+#### ***Overview***
 The `can_error_detection` module implements **fault confinement** for a CAN bus controller.  
 It detects protocol violations (bit, stuff, form, ACK, and CRC errors), updates **Transmit Error Counter (TEC)** and **Receive Error Counter (REC)**  and determines the node’s error state (`error_active`, `error_passive`, `bus_off`).
 
+#### ***Interface***
 
 #### ***Inputs***
 

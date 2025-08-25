@@ -1,3 +1,17 @@
+// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Description:
+// This module implements CAN bus error detection
+// and error state management logic according to the CAN protocol
+// It detects five key error types (bit, stuff, form, CRC, ACK), 
+// updates TEC (Transmit Error Counter) and REC (Receive Error Counter),
+// and manages the node’s error state (error_active, error_passive, bus_off).
+//
+// Author: Aryam Shabbir
+// Date: 6th August,2025
+
 module can_error_handling (
     input  logic clk,
     input  logic rst,
@@ -9,9 +23,7 @@ module can_error_handling (
     // For stuff error detection
     input  logic bit_de_stuffing_ff,
     input  logic remove_stuff_bit,
-    input  logic rx_bit_curr,
-    input  logic rx_bit_prev,
-
+   
     // For bit error exceptions
     input  logic in_arbitration,
     input  logic in_ack_slot,
@@ -39,6 +51,12 @@ module can_error_handling (
     output logic error_passive,
     output logic bus_off
 );
+logic rx_bit_curr;
+logic rx_bit_prev;
+logic prev_tx_error, prev_rx_error;
+logic tx_error, rx_error;
+logic flag_fourteen;
+logic [3:0] dominant_count;  // counts consecutive dominant bits
 
 //  STUFF ERROR 
 assign stuff_error = sample_point & bit_de_stuffing_ff & remove_stuff_bit & (rx_bit_curr == rx_bit_prev) & ~(in_arbitration);
@@ -56,13 +74,7 @@ assign form_error = sample_point & !rx_bit & (in_crc_delimiter || in_ack_delimit
 // CRC ERROR
 assign crc_error = crc_check_done & crc_rx_valid & ~crc_rx_match;
 
-// Track previous error conditions for single increment
-logic prev_tx_error, prev_rx_error;
-logic tx_error, rx_error;
-logic rx_bitprev;
-logic flag_fourteen;
-logic [3:0] dominant_count;          // counts consecutive dominant bits
-
+//ERROR DETECTION
 assign tx_error = tx_active && (bit_error || form_error || ack_error);
 assign rx_error = !tx_active && (bit_error ||form_error || stuff_error || crc_error);
 
@@ -71,30 +83,39 @@ logic success_tx, success_rx;
 assign success_tx = sample_point & tx_active & !(bit_error || form_error || ack_error);
 assign success_rx = sample_point & !tx_active & !(bit_error ||form_error || stuff_error || crc_error);
 
+always_ff @(posedge clk or negedge rst) begin
+    if (!rst)
+        rx_bit_curr <= 1'b1;
+    else 
+        rx_bit_curr <= rx_bit;
+end
+
+
 always_ff @(posedge clk or negedge rst )begin
     if(!rst)begin
-        rx_bitprev <= 1;
+        rx_bit_prev <= 1;
     end else begin
-        rx_bitprev <= rx_bit;
+        rx_bit_prev <= rx_bit;
     end
 end
 
 // Dominant Bit Logic
 always_ff @(posedge clk or negedge rst)begin
     if(!rst)begin
-        dominant_count <=1;
+        dominant_count <=0;
         flag_fourteen <=0;
-    end else if(rx_bitprev==0 && rx_bit ==0)begin
-         dominant_count <= dominant_count + 1;
-         if (dominant_count==14)begin
-            flag_fourteen <=1;
-            dominant_count <= 0;
-         end 
-    end else if(rx_bit==1)begin
+    end else if(rx_bit_prev==0 && rx_bit ==0)begin
+          dominant_count <= dominant_count + 1;
+          if (dominant_count==14)begin
+             flag_fourteen <=1;
+             dominant_count <= 0;
+          end 
+     end else if(rx_bit==1)begin
              flag_fourteen <=0;
-             dominant_count <=1;
+             dominant_count <=0;
+         end
     end
-end
+
 
 always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
@@ -104,15 +125,12 @@ always_ff @(posedge clk or negedge rst) begin
         prev_rx_error <= 1'b0;
     end else begin
 
-        // Default: hold values
-        tec <= tec;
-        rec <= rec;
-
-        // --- TEC/REC update priority ---
-        if (dominant_count==14 || (flag_fourteen && dominant_count==8)) begin
+        // TEC/REC update
+        if(dominant_count==14  )begin   // ||(flag_fourteen && dominant_count==8)) begin
             // Special dominant bit sequence → both counters +8
             tec <= (tec <= 8'd247) ? tec + 8 : 8'd255;
             rec <= (rec <= 8'd247) ? rec + 8 : 8'd255;
+           
 
         end else if (tx_error && !prev_tx_error) begin
             // Transmit error → TEC +8 (except passive + ack error)

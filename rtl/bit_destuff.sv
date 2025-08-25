@@ -1,13 +1,3 @@
-
-// Copyright 2025 Maktab-e-Digital Systems Lahore.
-// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
-// SPDX-License-Identifier: Apache-2.0
-// Description: 
-//A SystemVerilog testbench to verify that can_bit_destuffer correctly detects 
-//and flags stuffed bits after five identical bits in a CAN frame
-// Author: Nimrajavaid
-// Date: 01-August-2025
-
 module can_bit_destuffer (
   input  logic clk,
   input  logic rst_n,

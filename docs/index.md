@@ -39,7 +39,7 @@ Each submodule below contributes to a specific stage of CAN frame transmission a
 
 8. ***can_crc15_gen***
 
-9. ***can_error_detection***
+9. ***can_error_handling***
 
 10. ***can_timing***
 

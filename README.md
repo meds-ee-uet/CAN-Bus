@@ -9,4 +9,4 @@
 ---
 
 
-[Documentation Status](https://can-bus-ip-core.readthedocs.io/en/latest/)
+[Documentation Status](https://can-bus-docs.readthedocs.io/en/latest/)

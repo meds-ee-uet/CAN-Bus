@@ -550,7 +550,7 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
 </div>
 ---
 
-### ***Error HAndling Module `(can_error_handling)`***
+### ***Error Handling Module `(can_error_handling)`***
 
 ## Overview
 The `can_error_detection` module implements **fault confinement** for a CAN bus controller.  

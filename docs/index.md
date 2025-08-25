@@ -311,7 +311,7 @@ The `can_arbitration` module is responsible for detecting arbitration loss in a 
 
 ---
 
-## Inputs
+#### ***Inputs***
 
 | Signal              | Width | Description                                                                 |
 |---------------------|-------|-----------------------------------------------------------------------------|
@@ -324,7 +324,7 @@ The `can_arbitration` module is responsible for detecting arbitration loss in a 
 
 ---
 
-## Outputs
+#### ***Outputs***
 
 | Signal              | Width | Description                                                                 |
 |---------------------|-------|-----------------------------------------------------------------------------|
@@ -508,7 +508,7 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
 
 ---
 
-#### ***Interface***
+#### **Interface**
 
 #### ***Inputs***
 

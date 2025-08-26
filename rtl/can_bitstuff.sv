@@ -25,7 +25,7 @@ module can_bit_stuffer (
     end
   end
 
-  assign stuff_inserted = (same_count == 6);
+  assign stuff_inserted = (same_count == 5);
 
   always_comb begin
     if (stuff_inserted)

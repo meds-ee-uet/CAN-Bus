@@ -1,102 +1,92 @@
-// Copyright 2025 Maktab-e-Digital Systems Lahore.
-// Licensed under the Apache License, Version 2.0
-// Description: Testbench for CAN Transmitter FSM-based module
-// Author: Nimra Javaid
-// Date: 5-Aug-2025
 `timescale 1ns / 1ps
-`include "can_defs.svh"
 
 module tb_can_transmitter;
 
-  logic clk;
-  logic rst_n;
-  logic sample_point;
-  logic start_tx;
-  logic tx_remote_req;
-  logic [10:0] tx_id_std;
-  logic [17:0] tx_id_ext;
-  logic tx_ide;
-  logic tx_rtr1;
-  logic tx_rtr2;
-  logic [3:0] tx_dlc;
-  logic [14:0] tx_crc;
-  logic [7:0] tx_data[0:7];
-  logic tx_bit;
-  logic tx_done;
-  logic rd_tx_data_byte;
-  logic arbitration_active;
+    // Testbench signals
+    logic clk;
+    logic rst_n;
+    logic sample_point;
+    logic start_tx;
 
-  // Instantiate DUT
-  can_transmitter dut (
-    .clk(clk),
-    .rst_n(rst_n),
-    .sample_point(sample_point),
-    .start_tx(start_tx),
-    .tx_remote_req(tx_remote_req),
-    .tx_id_std(tx_id_std),
-    .tx_id_ext(tx_id_ext),
-    .tx_ide(tx_ide),
-    .tx_rtr1(tx_rtr1),
-    .tx_rtr2(tx_rtr2),
-    .tx_dlc(tx_dlc),
-    .tx_crc(tx_crc),
-    .tx_data(tx_data),
-    .tx_bit(tx_bit),
-    .tx_done(tx_done),
-    .rd_tx_data_byte(rd_tx_data_byte),
-    .arbitration_active(arbitration_active)
-  );
+    // CAN data bytes
+    logic [7:0] tx_data [0:9];
 
-  // Clock generation
-  always #5 clk = ~clk;
+    // DUT outputs
+    logic tx_bit;
+    logic tx_done;
+    logic rd_tx_data_byte;
+    logic arbitration_active;
 
-  // Sample point generation (you can change it to simulate bus timing more accurately)
-  always #10 sample_point = ~sample_point;
+    // Clock generation
+    initial clk = 0;
+    always #5 clk = ~clk; // 100 MHz clock
 
-  // Test sequence
-  initial begin
-    // Initialize
-    clk = 0;
-    sample_point = 0;
-    rst_n = 0;
-    start_tx = 0;
+    // Generate sample_point pulse every 10ns (same as clock rising edge here)
+    always @(posedge clk) sample_point <= 1;
 
-    tx_id_std = 11'h7FF;     // Max 11-bit ID
-    tx_id_ext = 18'h0;       // Not used
-    tx_ide = 1'b0;           // Standard frame
-    tx_rtr1 = 1'b0;          // Data frame
-    tx_rtr2 = 1'b0;
-    tx_remote_req = 1'b0;    // Not a remote frame
-    tx_dlc = 4'b0010;           // 2 bytes of data
-    tx_crc = 15'h1234;       // Dummy CRC
+    // DUT Instance
+    can_transmitter dut (
+        .clk(clk),
+        .rst_n(rst_n),
+        .sample_point(sample_point),
+        .start_tx(start_tx),
+        .tx_data_0(tx_data[0]),
+        .tx_data_1(tx_data[1]),
+        .tx_data_2(tx_data[2]),
+        .tx_data_3(tx_data[3]),
+        .tx_data_4(tx_data[4]),
+        .tx_data_5(tx_data[5]),
+        .tx_data_6(tx_data[6]),
+        .tx_data_7(tx_data[7]),
+        .tx_data_8(tx_data[8]),
+        .tx_data_9(tx_data[9]),
+        .tx_bit(tx_bit),
+        .tx_done(tx_done),
+        .rd_tx_data_byte(rd_tx_data_byte),
+        .arbitration_active(arbitration_active)
+    );
 
-    tx_data[0] = 8'hAB;      // Data byte 0
-    tx_data[1] = 8'hCD;      // Data byte 1
-    tx_data[2] = 8'h00;
-    tx_data[3] = 8'h00;
-    tx_data[4] = 8'h00;
-    tx_data[5] = 8'h00;
-    tx_data[6] = 8'h00;
-    tx_data[7] = 8'h00;
+    // Initialize and run simulation
+    initial begin
+        $dumpfile("can_tx_wave.vcd");
+        $dumpvars(0, tb_can_transmitter);
 
-    #20;
-    rst_n = 1;
+        // Reset
+        rst_n = 0;
+        start_tx = 0;
+        sample_point = 0;
+        repeat (5) @(posedge clk);
+        rst_n = 1;
 
-    // Wait for a few clock cycles
-    #20;
+        // Prepare CAN frame (Standard Frame, DLC=8)
+        tx_data[0] = 8'hAA; // ID[10:3]
+        tx_data[1] = 8'b1000_1000; // ID[2:0], RTR=0, DLC=8
+        tx_data[2] = 8'h11;
+        tx_data[3] = 8'h22;
+        tx_data[4] = 8'h33;
+        tx_data[5] = 8'h44;
+        tx_data[6] = 8'h55;
+        tx_data[7] = 8'h66;
+        tx_data[8] = 8'h77;
+        tx_data[9] = 8'h88;
 
-    // Start transmission
-    @(posedge clk);
-    start_tx = 1;
+        // Start transmission
+        @(posedge clk);
+        start_tx = 1;
+        @(posedge clk);
+        start_tx = 0;
 
-    @(posedge clk);
-    start_tx = 0;
+        // Wait for end of frame
+        wait (tx_done);
+        $display("CAN frame transmission completed at time %0t", $time);
 
-    // Wait for tx_done signal
-    wait (tx_done);
+        #100;
+        $finish;
+    end
 
-    $display("Transmission completed.");
-    $finish;
-  end
+    // Monitor transmitted bits
+    always @(posedge clk) if (sample_point) begin
+        $write("%0t: tx_bit = %b\n", $time, tx_bit);
+    end
 
 endmodule

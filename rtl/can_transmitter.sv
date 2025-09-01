@@ -29,7 +29,7 @@ module can_transmitter (
     logic [14:0] calculated_crc; // Placeholder – implement separately
     logic       tx_remote_req;
     
-    assign tx_frame_local.ide    = tx_data_1[4]; 
+    assign tx_frame_local.ide    = 1'b0; 
     assign tx_frame_local.id_std = {tx_data_0, tx_data_1[7:5]};
     assign tx_frame_local.id_ext = {tx_data_2, tx_data_3, tx_data_1[4:0]};
     assign tx_frame_local.rtr1   = tx_data_1[4];
@@ -88,7 +88,7 @@ module can_transmitter (
 
     // FSM Combinational Block
     always_comb begin
-        tx_bit_cnt_next   = 6'b0;
+        tx_bit_cnt_next   = tx_bit_cnt_ff;
         tx_byte_cnt_next  = tx_byte_cnt_ff;
         tx_data_byte_next = tx_data_byte_ff;
         tx_state_next     = tx_state_ff;
@@ -152,7 +152,7 @@ module can_transmitter (
              STATE_BIT_RTR_2: begin
                 arbitration_active = 1;
                 tx_frame_tx_bit = tx_frame_local.rtr2; 
-                arbitration_active = 0;
+                
                 tx_state_next = STATE_BIT_R_1;
             end 
              STATE_BIT_R_1: begin
@@ -175,7 +175,8 @@ module can_transmitter (
                     end else begin
                         tx_state_next   = STATE_DATA;
                         tx_bit_cnt_next = '0;
-                        rd_tx_data_byte = 1'b0;
+                        rd_tx_data_byte = 1'b1;
+                        tx_byte_cnt_next  = '0;
                     end
                 end else begin
                     tx_bit_cnt_next = tx_bit_cnt_ff - 1;
@@ -195,6 +196,9 @@ module can_transmitter (
                         tx_state_next = STATE_CRC;
                         tx_byte_cnt_next = '0;                   
                         tx_bit_cnt_next  = 14;
+                        rd_tx_data_byte   = 1'b0;
+                    end else begin
+                        rd_tx_data_byte   = 1'b1;
                     end
                 end
             end
@@ -246,13 +250,7 @@ module can_transmitter (
             default: tx_state_next = STATE_IDLE;
         endcase
     end
+assign tx_bit = tx_frame_tx_bit;
 
-    // TX Output
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
-            tx_bit <= 1'b1;
-        else if (sample_point)
-            tx_bit <= tx_frame_tx_bit;
-    end
 
 endmodule

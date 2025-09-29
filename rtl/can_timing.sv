@@ -27,6 +27,7 @@ module can_timing (
     input logic                                   rx_idle,
     input logic                                   rx_inter,
     input logic                                   go_tx,
+    input logic                                   go_rx_inter,
 
     input logic                                   node_error_passive,
 
@@ -215,7 +216,7 @@ always_comb begin
         end
 	
 	BIT_PHASE_TSEG2 : begin   		
-            if (tq_clk_ff & (do_hard_sync | ((do_resync | latched_resync) & sync_window))) begin
+            if (tq_clk_ff & (do_hard_sync | ((do_resync | latched_resync) & resync_window))) begin
                 bit_phase_next = BIT_PHASE_TSEG1;  
                 start_of_tseg1 = 1'b1;                                 
             end else begin

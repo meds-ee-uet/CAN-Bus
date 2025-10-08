@@ -7,6 +7,15 @@ module can_transmitter (
     input  logic        sample_point,
     input  logic        start_tx,
 
+
+    input  logic        ide,          
+    input  logic [10:0] id_std,       
+    input  logic [28:0] id_ext,      
+    input  logic        rtr,       
+    input  logic [3:0]  dlc,         
+
+
+
     input  logic [7:0]  tx_data_0,
     input  logic [7:0]  tx_data_1,
     input  logic [7:0]  tx_data_2,
@@ -15,10 +24,7 @@ module can_transmitter (
     input  logic [7:0]  tx_data_5,
     input  logic [7:0]  tx_data_6,
     input  logic [7:0]  tx_data_7,
-    input  logic [7:0]  tx_data_8,
-    input  logic [7:0]  tx_data_9,
     input  logic [14:0] calculated_crc,
-     // Placeholder – implement separately
     output logic        tx_bit,
     output logic        tx_done,
     output logic        rd_tx_data_byte,
@@ -31,24 +37,24 @@ module can_transmitter (
     
     logic       tx_remote_req;
     
-    assign tx_frame_local.ide    = 1'b0; 
-    assign tx_frame_local.id_std = {tx_data_0, tx_data_1[7:5]};
-    assign tx_frame_local.id_ext = {tx_data_2, tx_data_3, tx_data_1[4:0]};
-    assign tx_frame_local.rtr1   = tx_data_1[4];
-    assign tx_frame_local.dlc    = tx_data_1[3:0];
+    assign tx_frame_local.ide    = ide;
+    assign tx_frame_local.id_std = id_std;
+    assign tx_frame_local.id_ext = id_ext;
+    assign tx_frame_local.rtr1   = rtr;
+    assign tx_frame_local.dlc    = dlc;
     assign tx_frame_local.crc    = calculated_crc;
     assign tx_remote_req = (~(tx_frame_local.ide) & tx_frame_local.rtr1) | (tx_frame_local.ide & tx_frame_local.rtr2) | (~(|tx_frame_local.dlc));
 
     
     logic [7:0] tx_data_array [0:7];
-    assign tx_data_array[0] = tx_data_2;
-    assign tx_data_array[1] = tx_data_3;
-    assign tx_data_array[2] = tx_data_4;
-    assign tx_data_array[3] = tx_data_5;
-    assign tx_data_array[4] = tx_data_6;
-    assign tx_data_array[5] = tx_data_7;
-    assign tx_data_array[6] = tx_data_8;
-    assign tx_data_array[7] = tx_data_9;
+    assign tx_data_array[0] = tx_data_0;
+    assign tx_data_array[1] = tx_data_1;
+    assign tx_data_array[2] = tx_data_2;
+    assign tx_data_array[3] = tx_data_3;
+    assign tx_data_array[4] = tx_data_4;
+    assign tx_data_array[5] = tx_data_5;
+    assign tx_data_array[6] = tx_data_6;
+    assign tx_data_array[7] = tx_data_7;
 
 
     type_can_frame_states_e tx_state_ff, tx_state_next;
@@ -271,6 +277,7 @@ module can_transmitter (
         endcase
     end
 assign tx_bit = tx_frame_tx_bit;
+
 
 
 endmodule

@@ -1,11 +1,12 @@
 `timescale 1ns/1ps
+`include "can_defs.svh"
 module can_receiver(
     input  logic        clk,
     input  logic        rst_n,
     input  logic        rx_bit_curr,
     input  logic        sample_point,
     input  logic        remove_stuff_bit, // external destuff detect
-    output logic [7:0]  rx_data_array [7:0],
+    output logic [7:0]  rx_data_array [0:7],
     output logic        rx_done_flag,
     output logic [10:0] rx_id_std,
     output logic [17:0] rx_id_ext,
@@ -14,36 +15,9 @@ module can_receiver(
     output logic        rx_remote_req
 );
 
-    typedef struct packed {
-        logic [10:0] id_std;
-        logic [17:0] id_ext;
-        logic        ide;
-        logic        rtr1;
-        logic        rtr2;
-        logic [3:0]  dlc;
-        logic [14:0] crc;
-    } can_frame_t;
 
-    typedef enum logic [3:0] {
-        STATE_IDLE,
-        STATE_ID_STD,
-        STATE_BIT_RTR_1,
-        STATE_BIT_IDE,
-        STATE_ID_EXT,
-        STATE_BIT_RTR_2,
-        STATE_BIT_R_1,
-        STATE_BIT_R_0,
-        STATE_DLC,
-        STATE_DATA,
-        STATE_CRC,
-        STATE_CRC_DELIMIT,
-        STATE_ACK,
-        STATE_ACK_DELIMIT,
-        STATE_EOF,
-        STATE_IFS
-    } rx_state_t;
 
-    rx_state_t rx_state_ff, rx_state_next;
+    type_can_frame_states_e rx_state_ff, rx_state_next;
 
     logic [5:0] rx_bit_cnt_ff, rx_bit_cnt_next;
     logic [2:0] byte_cnt_ff,  byte_cnt_next;

@@ -74,7 +74,7 @@ typedef struct packed {
     logic [3:0]  dlc;          // Data Length Code
     logic [63:0] data;         // Flattened 8-byte data
     logic [14:0] crc;          // CRC field (15 bits for standard CAN)
-} can_frame_s;
+} can_frame_t;
 
 // TX/RX FSM states used in datapath
 typedef enum logic [4:0] {

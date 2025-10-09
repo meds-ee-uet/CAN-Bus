@@ -16,3 +16,23 @@
 </p>
 
 ---
+## Key Features
+
+- CAN 2.0A/B compliant – Supports standard (11-bit) and extended (29-bit) frames.
+
+- Multi-master communication with non-destructive arbitration.
+
+- Accurate bit timing with programmable synchronization segments.
+
+- Comprehensive error detection – bit, stuff, form, ACK, and CRC errors.
+
+- Priority and filtering module – Ensures high-priority messages are transmitted first and unwanted frames are ignored.
+
+- Automatic error handling with active, passive, and bus-off states.
+
+- Built-in CRC generation and checking for data integrity.
+
+- Modular design – transmitter, receiver, bit timing, CRC, and error units.
+
+- ACK slot handling and bit stuffing/destuffing support.
+

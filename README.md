@@ -16,8 +16,9 @@
 ![Static Badge](https://img.shields.io/badge/CAN2.0A%2FB-yellow)
 ![Static Badge](https://img.shields.io/badge/Modular_Design-purple)
 ![Static Badge](https://img.shields.io/badge/Error_Handling-red)
+</div>
 
-
+---
 
 ## Top-Level Block Diagram
 
@@ -27,6 +28,7 @@
 </p>
 
 ---
+
 ## Key Features
 
 - CAN 2.0A/B compliant – Supports standard (11-bit) and extended (29-bit) frames.

@@ -39,7 +39,7 @@ Each module below contributes to a specific stage of CAN frame transmission and 
 
 10. ***can_timing***
 
-### ***CAN Transmitter Module*** [`can_transmitter`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_transmitter.sv)
+### ***CAN Transmitter Module*** [`can_transmitter`]https://github.com/meds-ee-uet/CAN-Bus/blob/main/rtl/can_transmitter.sv
 
 #### ***Description***
 The `can_transmitter` module handles the bit-level serialization of a CAN frame according to the CAN 2.0A/B protocol. It implements a finite state machine (FSM) that transitions through each field of the frame — from Start of Frame (SOF) to Interframe Space (IFS) — and generates a single `tx_bit` at each sample point on the CAN bus.
@@ -123,16 +123,16 @@ This module supports both ***standard (11-bit ID)*** and ***extended (29-bit ID)
 Here is the data serialization data path:
 
 <div align="center">
-  <img src="./images_design/tx_data_array.jpg" width="600" height="600">
+  <img src="images_design/tx_data_array.jpg" width="600" height="600">
 </div>
 
 Here is the FSM for transmitter:
 
 <div align="center">
-  <img src="./images_design/tx_fsm.jpg" width="400" height="500">
+  <img src="images_design/tx_fsm.jpg" width="400" height="500">
 </div>
 
-### ***Receiver Module*** [`can_receiver`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_receiver.sv)
+### ***Receiver Module*** [`can_receiver`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/can_receiver.sv)
 
 #### ***Description***
 The `can_receiver` module receives and decodes a CAN frame bit-by-bit at each sampling point (`rx_point`). It reconstructs the full frame according to the CAN 2.0A/B protocol, supporting both ***standard (11-bit ID)*** and ***extended (29-bit ID)*** formats. It outputs all parsed fields of the CAN frame, including identifiers, control bits, data, and CRC, and signals completion with `rx_done`.
@@ -214,10 +214,10 @@ The `can_receiver` module receives and decodes a CAN frame bit-by-bit at each sa
 Here is the FSM for receiver:
 
 <div align="center">
-  <img src="./images_design/rx_fsm.jpg" width="400" height="500">
+  <img src="images_design/rx_fsm.jpg" width="400" height="500">
 </div>
 
-### ***Bit Stuffing Module*** [`can_bit_stuff`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_bitstuff.sv)
+### ***Bit Stuffing Module*** [`can_bit_stuff`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/can_bitstuff.sv)
 #### ***Description***
 The `can_bit_stuffer` module implements ***bit stuffing*** logic for a CAN (Controller Area Network) transmitter.  
 Bit stuffing ensures that no more than five consecutive identical bits are sent, preserving synchronization between transmitter and receiver.
@@ -251,7 +251,7 @@ When the module detects ***five consecutive identical bits***, it automatically 
 
 ---
 
-### ***Destuffing Module*** [`can_bit_destuff`](https://github.com/ee-uet/can-bus/blob/main/rtl/bit_destuff.sv)
+### ***Destuffing Module*** [`can_bit_destuff`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/bit_destuff.sv)
 
 #### ***Description***
 The `can_bit_destuffer` module implements ***bit de-stuffing*** logic for a CAN receiver.  
@@ -287,7 +287,7 @@ It detects and flags stuffed bits so the higher-level receiver logic can skip th
 Here is the Datapath of bit stuffing:
 
 <div align="center">
-  <img src="./images_design/bit_stuffing.jpg" width="500" height="500">
+  <img src="images_design/bit_stuffing.jpg" width="500" height="500">
 </div>
 
 ### ***Bit De-stuffing Data Path***
@@ -295,10 +295,10 @@ Here is the Datapath of bit stuffing:
 Here is the Datapath of bit de-stuffing:
 
 <div align="center">
-  <img src="./images_design/de_stuffing.jpg" width="600" height="500">
+  <img src="images_design/de_stuffing.jpg" width="600" height="500">
 </div>
 
-### ***Arbitration Module*** [`can_arbitration`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_arbitration.sv)
+### ***Arbitration Module*** [`can_arbitration`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/can_arbitration.sv)
 
 #### ***Description***
 
@@ -348,10 +348,10 @@ This module monitors the transmitted (`tx_bit`) and received (`rx_bit`) bits dur
 #### ***Arbitration Design Diagram***
 
 <div align="center">
-  <img src="./images_design/Arbitration.jpg" width="600" height="400">
+  <img src="images_design/Arbitration.jpg" width="600" height="400">
 </div>
 
-### ***Priority Module*** [`can_tx_priority`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_tx_priorty.sv)
+### ***Priority Module*** [`can_tx_priority`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/can_tx_priorty.sv)
 
 #### ***Description***
 
@@ -435,10 +435,10 @@ It maintains a sorted list of pending CAN messages, always transmitting the fram
 #### ***Design Diagram***
 
 <div align="center">
-  <img src="./images_design/pirority_module.jpg" width="600" height="400">
+  <img src="images_design/pirority_module.jpg" width="600" height="400">
 </div>
 
-### ***Filtering Module*** [`can_filtering`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_filtering.sv)
+### ***Filtering Module*** [`can_filtering`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/can_filtering.sv)
 #### ***Description***
 The `can_filtering` module implements ***CAN frame acceptance filtering*** based on the ***Acceptance Code*** and ***Acceptance Mask*** registers.  
 It supports both ***Standard (11-bit)*** and ***Extended (29-bit)*** CAN identifiers, allowing the receiver to accept or reject frames before processing.
@@ -484,10 +484,10 @@ This module compares the incoming CAN ID with configured acceptance codes, using
 #### ***Design Diagram***
 
 <div align="center">
-  <img src="./images_design/filtering.jpg" width="600" height="400">
+  <img src="images_design/filtering.jpg" width="600" height="400">
 </div>
 
-### ***CRC Module*** [`can_crc15_gen`](https://github.com/ee-uet/can-bus/blob/main/rtl/CRC.sv)
+### ***CRC Module*** [`can_crc15_gen`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/CRC.sv)
 
 #### ***Description***
 
@@ -532,11 +532,11 @@ This polynomial is defined by the CAN 2.0A/B standard and is used for error dete
 #### ***Design Diagram***
 
 <div align="center">
-  <img src="./images_design/crc.jpg" width="600" height="400">
+  <img src="images_design/crc.jpg" width="600" height="400">
 </div>
 ---
 
-### ***Error Handling Module*** [`can_error_handling`](https://github.com/ee-uet/can-bus/blob/main/rtl/can_error_handling.sv)
+### ***Error Handling Module*** [`can_error_handling`](https://github.com/ee-uet/CAN-Bus/blob/main/rtl/can_error_handling.sv)
 
 #### ***Overview***
 The `can_error_detection` module implements **fault confinement** for a CAN bus controller.  

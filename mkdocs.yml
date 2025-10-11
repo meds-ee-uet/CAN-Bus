@@ -1,3 +1,4 @@
 site_name: CAN Bus docs
 nav:
   - Home: index.md
+  - API Reference: API_Reference.md

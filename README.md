@@ -36,6 +36,15 @@
 
 - ACK slot handling and bit stuffing/destuffing support.
 
+## Quick Links
+
+| Category | Description | Location |
+|----------|-------------|----------|
+|  **Documentation** | ReadTheDocs Project Page | [ReadTheDocs](https://ip-can-bus.readthedocs.io/en/latest/) |
+| **License** | Project's license file | `LICENSE` |
+
+---
+
 ## Getting Started
 
 ###  1️⃣ Clone the repository
@@ -68,8 +77,5 @@ run -all
 
 ## Full Documentation
 
-For detailed module descriptions, timing diagrams, and verification results, visit:
 
-**[Full Documentation on ReadTheDocs](https://ip-can-bus.readthedocs.io/en/latest/)**
-
----
+[![Static Badge](https://img.shields.io/badge/Documentation-%20)](https://ip-can-bus.readthedocs.io/en/latest/)

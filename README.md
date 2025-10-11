@@ -19,8 +19,6 @@
 
 
 
-
-
 ## Top-Level Block Diagram
 
 <p align="center">
@@ -49,14 +47,6 @@
 
 - ACK slot handling and bit stuffing/destuffing support.
 
-## Quick Links
-
-| Category | Description | Location |
-|----------|-------------|----------|
-|  **Documentation** | ReadTheDocs Project Page | [ReadTheDocs](https://ip-can-bus.readthedocs.io/en/latest/) |
-| **License** | Project's license file | `LICENSE` |
-
----
 
 ## Getting Started
 

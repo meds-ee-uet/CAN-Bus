@@ -15,7 +15,9 @@
 [![Static Badge](https://img.shields.io/badge/License-blue)](https://github.com/meds-ee-uet/CAN-Bus/blob/main/LICENSE)
 [![Static Badge](https://img.shields.io/badge/CAN2.0A%2FB-yellow)](http://esd.cs.ucr.edu/webres/can20.pdf)
 [![Static Badge](https://img.shields.io/badge/Modular_Design-purple)](https://github.com/meds-ee-uet/CAN-Bus/tree/main/rtl)
-![Static Badge](https://img.shields.io/badge/Error_Handling-red)
+[![Static Badge](https://img.shields.io/badge/Simulation-orange)](https://github.com/meds-ee-uet/CAN-Bus/tree/main/testbench)
+
+
 </div>
 
 ---

@@ -8,6 +8,19 @@
   <b>A hardware module that implements the Controller Area Network  protocol for reliable serial communication between multiple devices in embedded systems.</b>
 </p>
 
+<div align="center">
+
+![Static Badge](https://img.shields.io/badge/Build-%20green)
+[![Static Badge](https://img.shields.io/badge/Documentation-orange)](https://ip-can-bus.readthedocs.io/en/latest/)
+[![Static Badge](https://img.shields.io/badge/License-blue)](https://github.com/meds-ee-uet/CAN-Bus/blob/main/LICENSE)
+![Static Badge](https://img.shields.io/badge/CAN2.0A%2FB-yellow)
+![Static Badge](https://img.shields.io/badge/Modular_Design-purple)
+![Static Badge](https://img.shields.io/badge/Error_Handling-red)
+
+
+
+
+
 ## Top-Level Block Diagram
 
 <p align="center">
@@ -77,5 +90,9 @@ run -all
 
 ## Full Documentation
 
+For detailed module descriptions, timing diagrams, and verification results, visit:
 
-[![Static Badge](https://img.shields.io/badge/Documentation-%20)](https://ip-can-bus.readthedocs.io/en/latest/)
+**[Full Documentation on ReadTheDocs](https://ip-can-bus.readthedocs.io/en/latest/)**
+
+---
+

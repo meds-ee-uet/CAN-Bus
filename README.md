@@ -36,3 +36,40 @@
 
 - ACK slot handling and bit stuffing/destuffing support.
 
+## Getting Started
+
+###  1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/meds-ee-uet/CAN-Bus.git
+cd CAN_Bus
+```
+### 2️⃣ Open QuestaSim and set up the working library
+```bash
+vlib work
+vmap work work
+```
+
+### 3️⃣ Compile all RTL and testbench files
+```
+vlog src/*.sv tb/tb_top.sv
+```
+### 4️⃣ Run the simulation
+```
+vsim work.tb_top -do "run -all"
+```
+
+### 5️⃣ (Optional) View waveforms
+```
+add wave *
+run -all
+```
+---
+
+## Full Documentation
+
+For detailed module descriptions, timing diagrams, and verification results, visit:
+
+**[Full Documentation on ReadTheDocs](https://ip-can-bus.readthedocs.io/en/latest/)**
+
+---

@@ -36,43 +36,36 @@ A hardware module that implements the Controller Area Network  protocol for reli
 
 ## 🧩 Project Structure
 CAB-Bus/
-
 │
 ├── docs/ # Project documentation files
-
-│ ├── introduction.md 
-
-│ ├── architecture.md 
-
-│ ├── modules/ 
-│ │ ├── transmitter.md
-│ │ ├── receiver.md
-│ │ ├── bit_timing.md
-│ │ ├── crc_module.md
-│ │ └── error_handler.md
-│ └── verification_plan.md 
+│   ├── home.md /
+│   ├── installation.md /
+│   ├── API_Refernece.md /
+│   ├── contributing.md/
+│   ├── index.md /
+│ 
 ├── rtl/ # SystemVerilog source code
-│ ├── can_top_module.sv 
-│ ├── can_transmitter.sv
-│ ├── can_receiver.sv
-│ ├── can_timing.sv
-│ ├── can_crc.sv
-│ └── can_error_handling.sv
-│ └── can_arbitartion.sv
-│ └── can_filtering.sv
-│ └── can_tx_priorty.sv
+│   ├── can_top_module.sv /
+│   ├── can_transmitter.sv/
+│   ├── can_receiver.sv/
+│   ├── can_timing.sv/
+│   ├── can_crc.sv/
+│   ├── can_error_handling.sv/
+│   ├──can_arbitartion.sv/
+│   ├── can_filtering.sv/
+│   ├──can_tx_priorty.sv/
 │
 ├── tb/ # Testbench and verification 
-│ ├── tb_can_top.sv 
-│ ├── tb_can_transmitter.sv
-│ ├── tb_can_receiver.sv
-│ ├── tb_can_timing.sv
-│ ├── tb_can_error_handler.sv
-│ ├── tb_can_arbitration.sv
-│ ├── tb_can_filtering.sv
-│ ├── tb_can_tx_priorty.sv
+│   ├── tb_can_top.sv /
+│   ├── tb_can_transmitter.sv/
+│   ├── tb_can_receiver.sv/
+│   ├── tb_can_timing.sv/
+│   ├── tb_can_error_handler.sv/
+│   ├── tb_can_arbitration.sv/
+│   ├── tb_can_filtering.sv/
+│   ├── tb_can_tx_priorty.sv/
 │
-├── README.md
+├── README.md/
 
 ## Licensing
 

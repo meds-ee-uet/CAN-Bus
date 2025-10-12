@@ -35,9 +35,11 @@ A hardware module that implements the Controller Area Network  protocol for reli
 - ACK slot handling and bit stuffing/destuffing support.
 
 ## 🧩 Project Structure
+```
 CAB-Bus/
 │
 ├── docs/ # Project documentation files
+|   ├──images_design/
 │   ├── home.md /
 │   ├── installation.md /
 │   ├── API_Refernece.md /
@@ -66,7 +68,7 @@ CAB-Bus/
 │   ├── tb_can_tx_priorty.sv/
 │
 ├── README.md/
-
+```
 ## Licensing
 
 Licensed under the **Apache License 2.0**

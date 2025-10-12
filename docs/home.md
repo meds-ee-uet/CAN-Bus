@@ -11,7 +11,6 @@ A hardware module that implements the Controller Area Network  protocol for reli
   <img src="./images_design/top_module.jpg" width="600" height="400">
 </div>
 
----
 
 ## Key Features
 

@@ -7,10 +7,9 @@ A hardware module that implements the Controller Area Network  protocol for reli
 
 ## Top-Level Block Diagram
 
-<p align="center">
-  <img src="./images_design/top_module.jpg" 
-   alt="Top-Level Architecture" width="600">
-</p>
+<div align="center">
+  <img src="./images_design/top_module.jpg" width="600" height="400">
+</div>
 
 ---
 

@@ -39,8 +39,11 @@ CAB-Bus/
 
 │
 ├── docs/ # Project documentation files
+
 │ ├── introduction.md 
+
 │ ├── architecture.md 
+
 │ ├── modules/ 
 │ │ ├── transmitter.md
 │ │ ├── receiver.md

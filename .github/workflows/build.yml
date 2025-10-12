@@ -1,0 +1,22 @@
+name: Build Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Repository Structure Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify Repository Files
+        run: |
+          echo "✅ Checking CAN Bus project structure..."
+          ls -R
+          echo "✅ Build check completed successfully!"

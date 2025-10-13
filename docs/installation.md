@@ -35,7 +35,7 @@ Before starting, make sure your system meets the following requirements.
 
 Follow these steps to prepare your simulation environment.
 
-#### **Step 1: Launch QuestaSim**
+##### **Step 1: Launch QuestaSim**
 - Open QuestaSim from your system applications or terminal.  
 - In the QuestaSim GUI, go to:  
   `File → New → Project`
@@ -43,7 +43,7 @@ Follow these steps to prepare your simulation environment.
 
 ---
 
-#### **Step 2: Add Source Files**
+##### **Step 2: Add Source Files**
 - Add all `.sv` files from the `src/` folder.  
 - Add the top-level testbench file `can_top_tb.sv` from the `testbench/` folder.  
 - Ensure that **`can_top.sv`** is set as the **design’s top module**.

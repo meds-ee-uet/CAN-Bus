@@ -1,4 +1,4 @@
-# Installation 
+# Installation/User Guide
 
 © 2025 **Maktab-e-Digital Systems Lahore**  
 Licensed under the [Apache 2.0 License](https://www.google.com/search?q=LICENSE)

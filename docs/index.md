@@ -25,7 +25,7 @@ The CAN Bus IP Core is designed to transmit and receive CAN frames with full sup
 This documentation is organized into specialized sections. Click on any page below to navigate:
 
 - [ Home](home.md)
-- [ Installation](installation.md)
+- [ Installation/User Guide](installation.md)
 - [Theory of Operation](theory_of_operation.md)
 - [ API Reference](API_Reference.md)
 - [ Contributing](contributing.md)

@@ -26,6 +26,7 @@ This documentation is organized into specialized sections. Click on any page bel
 
 - [ Home](home.md)
 - [ Installation](installation.md)
+- [Theory of Operation](theory_of_operation.md)
 - [ API Reference](API_Reference.md)
 - [ Contributing](contributing.md)
 

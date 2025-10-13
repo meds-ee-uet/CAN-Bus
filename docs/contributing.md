@@ -32,7 +32,7 @@ We encourage you to contribute code or documentation through pull requests.
 1. **Fork** the repository and create your branch:
    ```bash
    git checkout -b feature/your-feature-name
-   ```issues
+   ```
 2. **Test your changes** (simulation, synthesis, or documentation build).  
 3. **Commit with a clear message**:
    ```bash

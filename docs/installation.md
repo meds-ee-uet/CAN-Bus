@@ -12,18 +12,18 @@ The entire project is implemented in **SystemVerilog**, including all submodules
 
 ---
 
-## 🖥️ 1. Prerequisites
+##  **1.Prerequisites**
 
 Before starting, make sure your system meets the following requirements.
 
-### **Software Requirements**
+#### **Software Requirements**
 - **Operating System:** Windows 10+ / Ubuntu 20.04+
 - **Mentor QuestaSim** (preferred version 2021.1 or later)
 - **SystemVerilog Support** enabled
 - **Git** (for version control)
 - **Text Editor/IDE:** VS Code, Sublime, or Questa built-in editor
 
-### **Download link for QuestaSim:**
+#### **Download link for QuestaSim:**
 [QuesataSim Download Page](https://getintopc.com/softwares/simulators/mentor-graphics-questasim-2024-free-download/)
 
 #### You can also use **EDA Playground** to simulate your SystemVerilog files online without local installation: 
@@ -31,7 +31,7 @@ Before starting, make sure your system meets the following requirements.
 
 ---
 
-## ⚙️ 2. Setting Up QuestaSim
+##  **2. Setting Up QuestaSim**
 
 Follow these steps to prepare your simulation environment.
 
@@ -50,7 +50,7 @@ Follow these steps to prepare your simulation environment.
 
 ---
 
-##  3. Compile the Design
+##  **3. Compile the Design**
 
 Open the **Transcript Window** and run the following commands:
 
@@ -66,7 +66,7 @@ vlog ../testbench/can_top_tb.sv
 
 If compilation is successful, no errors should appear in the transcript.
 
-##  4. Run the Simulation
+##  **4. Run the Simulation**
 
 After successful compilation, start the simulation using:
 
@@ -80,13 +80,13 @@ add wave *
 run -all
 ```
 
-##  5. Simulation Verification
+##  **5. Simulation Verification**
 
 The top-level module integrates all submodules (transmitter, receiver, bit timing, CRC, error handling).  
 Simulation confirms correct CAN frame transmission, reception, timing, and CRC/error handling.
 
 ---
-##  6. Troubleshooting
+##  **6. Troubleshooting**
 
 | Issue                       | Cause                                | Solution                             |
 |------------------------------|--------------------------------------|-------------------------------------|

@@ -7,9 +7,9 @@ A hardware module that implements the Controller Area Network  protocol for reli
 
 ## Top-Level Block Diagram
 
-<p align="center">
-  <img src="https://github.com/meds-ee-uet/CAN-Bus/blob/main/docs/images_design/top_module.jpg" width="700" height="400">
-</p>
+<div align="center">
+  <img src="./images_design/top_module.jpg" width="600" height="400">
+</div>
 
 
 ## Key Features

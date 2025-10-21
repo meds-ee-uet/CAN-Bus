@@ -35,7 +35,7 @@ module can_receiver(
     assign rx_remote_req = ((~rx_frame_ff.ide) & rx_frame_ff.rtr1) |
                            ( rx_frame_ff.ide & rx_frame_ff.rtr2);
 
-    // Sequential logic
+
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             rx_state_ff        <= STATE_IDLE;
@@ -44,26 +44,33 @@ module can_receiver(
             rx_frame_ff        <= '0;
             data_byte_ff       <= '0;
             bit_de_stuffing_ff <= 1'b0;
-        end else if (sample_point & remove_stuff_bit) begin
-            // Hold state, skip this bit
-            rx_state_ff        <= rx_state_ff;
-            rx_bit_cnt_ff      <= rx_bit_cnt_ff;
-            byte_cnt_ff        <= byte_cnt_ff;
-            rx_frame_ff        <= rx_frame_ff; 
-            data_byte_ff       <= data_byte_ff;
-            bit_de_stuffing_ff <= bit_de_stuffing_ff;
-        end else if (sample_point& ~remove_stuff_bit) begin
-            rx_state_ff        <= rx_state_next;
-            rx_bit_cnt_ff      <= rx_bit_cnt_next; 
-            byte_cnt_ff        <= byte_cnt_next;
-            rx_frame_ff        <= rx_frame_next; 
-            data_byte_ff       <= data_byte_next;
-            bit_de_stuffing_ff <= bit_de_stuffing_next;
-
-            if (wr_rx_data_byte)
-                rx_data_array[byte_cnt_ff] <= data_byte_next;
         end
+        else if (sample_point) begin
+           
+            if (remove_stuff_bit) begin
+                
+                rx_state_ff        <= rx_state_ff;
+                rx_bit_cnt_ff      <= rx_bit_cnt_ff;
+                byte_cnt_ff        <= byte_cnt_ff;
+                rx_frame_ff        <= rx_frame_ff;
+                data_byte_ff       <= data_byte_ff;
+                bit_de_stuffing_ff <= bit_de_stuffing_ff;
+            end else begin
+               
+                rx_state_ff        <= rx_state_next;
+                rx_bit_cnt_ff      <= rx_bit_cnt_next;
+                byte_cnt_ff        <= byte_cnt_next;
+                rx_frame_ff        <= rx_frame_next;
+                data_byte_ff       <= data_byte_next;
+                bit_de_stuffing_ff <= bit_de_stuffing_next;
+
+                if (wr_rx_data_byte)
+                    rx_data_array[byte_cnt_ff] <= data_byte_next;
+            end
+        end
+        // else: between sample points we don't change state (hold)
     end
+
 
     // Combinational logic
     always_comb begin
@@ -87,7 +94,7 @@ module can_receiver(
             end
             
             STATE_ID_STD: begin                   
-                rx_frame_next.id_std = {rx_frame_ff.id_std[9:0], rx_bit_curr};
+                rx_frame_next.id_std = {rx_frame_ff.id_std[10:0], rx_bit_curr};
                 if (rx_bit_cnt_ff == 10) begin
                     rx_state_next   = STATE_BIT_RTR_1;
                     rx_bit_cnt_next = 0;

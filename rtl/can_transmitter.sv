@@ -41,6 +41,7 @@ module can_transmitter (
     assign tx_frame_local.id_std = id_std;
     assign tx_frame_local.id_ext = id_ext;
     assign tx_frame_local.rtr1   = rtr;
+    assign tx_frame_local.rtr2 = rtr;
     assign tx_frame_local.dlc    = dlc;
     assign tx_frame_local.crc    = calculated_crc;
     assign tx_remote_req = (~(tx_frame_local.ide) & tx_frame_local.rtr1) | (tx_frame_local.ide & tx_frame_local.rtr2) | (~(|tx_frame_local.dlc));
@@ -276,7 +277,12 @@ module can_transmitter (
             default: tx_state_next = STATE_IDLE;
         endcase
     end
-assign tx_bit = tx_frame_tx_bit;
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        tx_bit <= 1'b1;
+    else if (sample_point)
+        tx_bit <= tx_frame_tx_bit;
+end
 
 
 

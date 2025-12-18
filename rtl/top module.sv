@@ -40,30 +40,39 @@ module can_top (
     output logic        rx_done_flag,
     output logic        arbitration_active
 );
-
+    // internal signals
     logic         crc_en;
+    logic         bit_stuffing_en;
     logic         crc_init;
     logic         rd_tx_data_byte;
     logic [7:0]   rx_data_array [0:7];
     logic         tx_frame_tx_bit;
     logic         rx_bit_curr;
-
+    logic         stuffed_tx_bit;
+   // receiver outputs (internal wires to observe decoded fields)
     logic [10:0]  rx_id_std_int;
     logic [17:0]  rx_id_ext_int;
     logic         rx_ide_int;
     logic [3:0]   rx_dlc_int;
     logic         rx_remote_req_int;
+    logic                                   bit_sample_point, bit_start_point;
 
+    // destuff control (tie low for now; later drive from destuffer/timing)
     logic         remove_stuff_bit_int;
+    logic bit_stuffig_en;
+    logic insert_stuff_bit;
 
-    type_reg2tim_s reg2tim_i; 
+    type_reg2tim_s reg2tim_i; // register-to-timing struct (set in TB if needed)
 
-
-    assign crc_en   = crc_active && sample_point;
+    // CRC enable logic - stops when CRC field starts
+    assign crc_en   = crc_active && sample_point && ~insert_stuff_bit;
+    assign bit_stuffing = bit_stuffing_en;
     assign crc_init = start_tx;
-    assign tx_bit   = tx_frame_tx_bit;     
-    assign rx_bit_curr = tx_bit;           // receiver reads what transmitter sends
-
+    assign tx_bit   = stuffed_tx_bit;     // CAN bus line driven by transmitter           // receiver reads what transmitter sends
+    assign rx_bit_curr = sampled_bit;
+    assign rx_bit_prev = sampled_bit_q;
+    assign bit_sample_point = sample_point;
+    assign bit_start_point = tx_point;
     // CAN CRC
     can_crc15_gen u_crc (
         .clk        (clk),
@@ -79,6 +88,7 @@ module can_top (
         .clk                (clk),
         .rst_n              (rst_n),
         .sample_point       (sample_point),
+        .bit_start_point(tx_point),
         .start_tx           (start_tx),
         .ide                (ide),
         .id_std             (id_std),
@@ -95,19 +105,32 @@ module can_top (
         .tx_data_7          (tx_data_7),
         .rd_tx_data_byte    (rd_tx_data_byte),
         .calculated_crc     (calculated_crc),
+        .insert_stuff_bit    (insert_stuff_bit),
         .crc_active         (crc_active),
         .tx_bit             (tx_frame_tx_bit),
         .tx_done            (tx_done),
-        .arbitration_active (arbitration_active)
+        .arbitration_active (arbitration_active),
+        .bit_stuffing_en    (bit_stuffing_en)
     );
-
-
+    can_bit_stuffer u_stuffer (
+        .clk(clk),
+        .rst_n(rst_n),
+        .reset_mode(reset_mode),
+        .bit_start_point(tx_point),
+        .sample_point(sample_point),
+        .tx_frame_tx_bit(tx_frame_tx_bit),
+        .bit_stuffing_en(bit_stuffing),
+        .stuffed_tx_bit(stuffed_tx_bit),
+        .insert_stuff_bit(insert_stuff_bit)
+    );
+    // Receiver
+    // connect all outputs to internal signals so top can observe them
     assign remove_stuff_bit_int = 1'b0; // tie low for now (no external destuff)
 
     can_receiver u_receiver (
         .clk             (clk),
         .rst_n           (rst_n),
-        .rx_bit_curr     (rx_bit_curr),
+        .rx_bit_curr     (stuffed_tx_bit),
         .sample_point    (sample_point),
         .remove_stuff_bit(remove_stuff_bit_int),
         .rx_data_array   (rx_data_array),
@@ -119,6 +142,7 @@ module can_top (
         .rx_remote_req   (rx_remote_req_int)
     );
 
+
     // Timing
     can_timing u_can_timing (
         .rst_n              (rst_n),
@@ -127,8 +151,8 @@ module can_top (
         .go_overload_frame  (go_overload_frame),
         .send_ack           (send_ack),
         .rx                 (rx_bit_curr),
-        .tx                 (tx_bit),
-        .tx_next            (tx_frame_tx_bit),
+        .tx                 (tx),
+        .tx_next            (tx_next),
         .transmitting       (transmitting),
         .transmitter        (transmitter),
         .rx_idle            (rx_idle),

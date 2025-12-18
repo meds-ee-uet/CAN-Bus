@@ -6,6 +6,7 @@ module can_transmitter (
     input  logic        rst_n,
     input  logic        sample_point,
     input  logic        start_tx,
+    input logic         bit_start_point,
 
 
     input  logic        ide,          
@@ -15,7 +16,7 @@ module can_transmitter (
     input  logic [3:0]  dlc,         
 
 
-
+    input logic         insert_stuff_bit,
     input  logic [7:0]  tx_data_0,
     input  logic [7:0]  tx_data_1,
     input  logic [7:0]  tx_data_2,
@@ -29,6 +30,7 @@ module can_transmitter (
     output logic        tx_done,
     output logic        rd_tx_data_byte,
     output logic        crc_active,
+    output logic        bit_stuffing_en,
     output logic        arbitration_active
 );
 
@@ -62,8 +64,10 @@ module can_transmitter (
     logic [5:0] tx_bit_cnt_ff, tx_bit_cnt_next;
     logic [3:0] tx_byte_cnt_ff, tx_byte_cnt_next;
     logic [7:0] tx_data_byte_ff, tx_data_byte_next;
-    logic       bit_stuffing_ff, bit_stuffing_next;
     logic       tx_frame_tx_bit;
+    logic                                   arbitration_lost_ff, arbitration_lost_next;
+    assign bit_sample_point = sample_point;
+
     
     
 
@@ -72,7 +76,7 @@ module can_transmitter (
         if (!rst_n) begin
             tx_byte_cnt_ff  <= '0;
             tx_data_byte_ff <= '0;
-        end else if (sample_point) begin
+        end else if (sample_point & ~insert_stuff_bit) begin
             if (rd_tx_data_byte) begin
                 tx_data_byte_ff <= tx_data_array[tx_byte_cnt_next];
                 tx_byte_cnt_ff  <= tx_byte_cnt_next;
@@ -83,17 +87,20 @@ module can_transmitter (
     end
 
     // FSM Sequential Block
-    always_ff @(posedge clk or negedge rst_n) begin 
-        if (!rst_n) begin 
-            tx_state_ff <= STATE_IDLE; 
-            tx_bit_cnt_ff <= '0; 
-        end 
-        else if (sample_point) begin 
-            tx_state_ff <= tx_state_next; 
-            tx_bit_cnt_ff <= tx_bit_cnt_next; 
-            bit_stuffing_ff <= bit_stuffing_next;
-
-        end 
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            tx_state_ff <= STATE_IDLE;
+            tx_bit_cnt_ff <= '0;
+        end else if (arbitration_lost_next) begin
+            tx_state_ff <= STATE_IDLE;
+            tx_bit_cnt_ff <= '0;
+        end else if (bit_sample_point & insert_stuff_bit) begin
+        tx_state_ff <= tx_state_ff;
+        tx_bit_cnt_ff <= tx_bit_cnt_ff;  
+        end else if (bit_sample_point & (~insert_stuff_bit)) begin
+        tx_state_ff <= tx_state_next;
+        tx_bit_cnt_ff <= tx_bit_cnt_next;   
+        end
     end
 
     // FSM Combinational Block
@@ -105,26 +112,26 @@ module can_transmitter (
         tx_frame_tx_bit   = 1'b1;
         tx_done           = 1'b0;
         arbitration_active = 1'b0;
-        bit_stuffing_next = 1'b0;
-        bit_stuffing_next = bit_stuffing_ff;
+        bit_stuffing_en= 1'b0;
         rd_tx_data_byte   = 1'b0;
         crc_active = 1'b0;
 
         case (tx_state_ff)
             STATE_IDLE: begin
-                bit_stuffing_next = 1'b0;
+                bit_stuffing_en = 1'b0;
                 if (start_tx) begin
                     crc_active = 1'b1;
                     tx_frame_tx_bit = 1'b0;
                     tx_state_next   = STATE_ID_STD;
                     tx_bit_cnt_next = 10;
                     arbitration_active = 1'b0;
-                    bit_stuffing_next = 1'b1;
+                    bit_stuffing_en = 1'b1;
                 end
             end
 
              STATE_ID_STD: begin
                    crc_active = 1'b1;
+                   bit_stuffing_en = 1'b1;
                    arbitration_active = 1;
                    tx_frame_tx_bit = tx_frame_local.id_std[tx_bit_cnt_ff];
                    if (tx_bit_cnt_ff == 0) begin
@@ -138,12 +145,14 @@ module can_transmitter (
              STATE_BIT_RTR_1: begin
                 crc_active = 1'b1;
                 arbitration_active = 1;
+                bit_stuffing_en = 1'b1;
                 tx_frame_tx_bit = tx_frame_local.rtr1; 
                 tx_state_next = STATE_BIT_IDE;
              end 
              STATE_BIT_IDE: begin
                 crc_active = 1'b1;
                 arbitration_active = 1;
+                bit_stuffing_en = 1'b1;
                 tx_frame_tx_bit = tx_frame_local.ide; 
                 if (tx_frame_local.ide == 1) begin
                     tx_state_next = STATE_ID_EXT;
@@ -156,6 +165,7 @@ module can_transmitter (
             STATE_ID_EXT: begin
                     crc_active = 1'b1;
                     arbitration_active = 1;
+                    bit_stuffing_en = 1'b1;
                     tx_frame_tx_bit = tx_frame_local.id_ext[tx_bit_cnt_ff];
                     if (tx_bit_cnt_ff == '0) begin
                         tx_state_next = STATE_BIT_RTR_2;
@@ -168,6 +178,7 @@ module can_transmitter (
              STATE_BIT_RTR_2: begin
                 crc_active = 1'b1;
                 arbitration_active = 1;
+                bit_stuffing_en = 1'b1;
                 tx_frame_tx_bit = tx_frame_local.rtr2; 
                 
                 tx_state_next = STATE_BIT_R_1;
@@ -175,11 +186,13 @@ module can_transmitter (
              STATE_BIT_R_1: begin
                 crc_active = 1'b1;
                 tx_frame_tx_bit = 1'b0; 
+                bit_stuffing_en = 1'b1;
                 tx_state_next = STATE_BIT_R_0;
             end 
              STATE_BIT_R_0: begin
                 crc_active = 1'b1;
                 tx_frame_tx_bit = 1'b0; 
+                bit_stuffing_en = 1'b1;
                 tx_state_next = STATE_DLC;
                 tx_bit_cnt_next  = 3;
             end 
@@ -187,6 +200,7 @@ module can_transmitter (
 
             STATE_DLC: begin
                 crc_active = 1'b1;
+                bit_stuffing_en = 1'b1;
                 tx_frame_tx_bit = tx_frame_local.dlc[tx_bit_cnt_ff];
                 if (tx_bit_cnt_ff == 0) begin
                     if (tx_remote_req) begin
@@ -205,10 +219,15 @@ module can_transmitter (
 
 
             STATE_DATA: begin  
-                crc_active = 1'b1;          
+                crc_active = 1'b1;   
+                bit_stuffing_en = 1'b1;       
                 tx_frame_tx_bit   = tx_data_byte_ff[7];
                 tx_data_byte_next = {tx_data_byte_ff[6:0], 1'b0};
-                tx_bit_cnt_next   = tx_bit_cnt_ff + 1;
+                
+                // Don't increment during stuff bits
+                if (!insert_stuff_bit) begin
+                    tx_bit_cnt_next = tx_bit_cnt_ff + 1;
+                end
 
                 if (tx_bit_cnt_ff[2:0] == 3'd7) begin
                     tx_byte_cnt_next = tx_byte_cnt_ff + 1'b1;
@@ -226,6 +245,7 @@ module can_transmitter (
 
             STATE_CRC: begin
                 crc_active = 1'b0;
+                bit_stuffing_en = 1'b1;
                 tx_frame_tx_bit = tx_frame_local.crc[tx_bit_cnt_ff];
                 if (tx_bit_cnt_ff == 0)
                     tx_state_next = STATE_CRC_DELIMIT;
@@ -238,7 +258,7 @@ module can_transmitter (
                 crc_active = 1'b0;
                 tx_frame_tx_bit = 1'b1;
                 tx_state_next   = STATE_ACK;
-                bit_stuffing_next = 1'b0;
+                bit_stuffing_en = 1'b0;
             end
 
             STATE_ACK: begin

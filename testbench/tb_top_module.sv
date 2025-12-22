@@ -1,3 +1,11 @@
+// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
+// SPDX-License-Identifier: Apache-2.0
+//Description: 
+// top module of CAN Bus IP Core
+// Author: Nimrajavaid
+// Date: 22-Dec-2025
+
 `timescale 1ns / 1ps
 `include "can_defs.svh"
 
@@ -91,15 +99,15 @@ module tb_can_top;
         rst_n = 0;
         start_tx = 0;
         ide = 0;
-        id_std = 11'b10111110111;
+        id_std = 11'b0101010111;
         id_ext = 29'h1ABCDEF;
         rtr = 0;
         dlc = 4'b0100;
 
-        tx_data_0 = 8'h88;
-        tx_data_1 = 8'h22;
-        tx_data_2 = 8'h33;
-        tx_data_3 = 8'h44;
+        tx_data_0 = 8'h55;
+        tx_data_1 = 8'h55;
+        tx_data_2 = 8'h55;
+        tx_data_3 = 8'h55;
         tx_data_4 = 8'h55;
         tx_data_5 = 8'h66;
         tx_data_6 = 8'h77;

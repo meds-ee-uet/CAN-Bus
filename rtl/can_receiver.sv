@@ -1,3 +1,10 @@
+// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
+// SPDX-License-Identifier: Apache-2.0
+//Description: 
+// CAN Receiver 
+// Author: Muhammad Tahir & Nimra javaid
+// Date: 22-Dec-2025
 `timescale 1ns/1ps
 `include "can_defs.svh"
 module can_receiver(
@@ -68,7 +75,7 @@ module can_receiver(
                     rx_data_array[byte_cnt_ff] <= data_byte_next;
             end
         end
-        // else: between sample points we don't change state (hold)
+        
     end
 
 

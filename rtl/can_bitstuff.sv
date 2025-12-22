@@ -1,3 +1,12 @@
+// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
+// SPDX-License-Identifier: Apache-2.0
+//Description: 
+// Bit stuffing 
+// Author: Nimra javaid
+// Date: 22-Dec-2025
+
+
 module can_bit_stuffer (
     input  logic clk,
     input  logic rst_n,
@@ -44,15 +53,15 @@ module can_bit_stuffer (
             tx_bit_curr <= 1'b1;
         else if (reset_mode)
             tx_bit_curr <= 1'b1;
-        else if (sample_point)
+        else if (bit_start_point)
             tx_bit_curr <= tx_bit_next;
     end
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
-            tx_bit_prev <= 1'b1;
+            tx_bit_prev <= 1'b0;
         else if (reset_mode)
-            tx_bit_prev <= 1'b1;
-        else if (sample_point)
+            tx_bit_prev <= 1'b0;
+        else if (bit_start_point)
             tx_bit_prev <= tx_bit_curr;
     end
     assign stuffed_tx_bit = tx_bit_curr;

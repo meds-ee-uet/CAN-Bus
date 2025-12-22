@@ -1,3 +1,12 @@
+// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
+// SPDX-License-Identifier: Apache-2.0
+//Description: 
+// CAN Transmiter 
+// Author: Muhammad Tahir & Nimra javaid
+// Date: 22-Dec-2025
+
+
 `include "can_defs.svh"
 `timescale 1ns / 10ps
 
@@ -76,7 +85,7 @@ module can_transmitter (
         if (!rst_n) begin
             tx_byte_cnt_ff  <= '0;
             tx_data_byte_ff <= '0;
-        end else if (sample_point & ~insert_stuff_bit) begin
+        end else if (bit_start_point & ~insert_stuff_bit) begin
             if (rd_tx_data_byte) begin
                 tx_data_byte_ff <= tx_data_array[tx_byte_cnt_next];
                 tx_byte_cnt_ff  <= tx_byte_cnt_next;
@@ -94,10 +103,10 @@ module can_transmitter (
         end else if (arbitration_lost_next) begin
             tx_state_ff <= STATE_IDLE;
             tx_bit_cnt_ff <= '0;
-        end else if (bit_sample_point & insert_stuff_bit) begin
+        end else if (bit_start_point & insert_stuff_bit) begin
         tx_state_ff <= tx_state_ff;
         tx_bit_cnt_ff <= tx_bit_cnt_ff;  
-        end else if (bit_sample_point & (~insert_stuff_bit)) begin
+        end else if (bit_start_point & (~insert_stuff_bit)) begin
         tx_state_ff <= tx_state_next;
         tx_bit_cnt_ff <= tx_bit_cnt_next;   
         end

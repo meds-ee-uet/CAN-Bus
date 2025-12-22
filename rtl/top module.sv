@@ -1,3 +1,10 @@
+// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
+// SPDX-License-Identifier: Apache-2.0
+//Description: 
+// top module of CAN Bus IP Core
+// Author: Nimrajavaid
+// Date: 22-Dec-2025
 `include "can_defs.svh"
 `timescale 1ns / 10ps
 
@@ -6,7 +13,7 @@ module can_top (
     input  logic        rst_n,
     input  logic        start_tx,
     input  logic        ide,
-    input  logic [10:0] id_std,        // fixed syntax
+    input  logic [10:0] id_std,       
     input  logic [28:0] id_ext,
     input  logic        rtr,
     input  logic [3:0]  dlc,
@@ -49,26 +56,24 @@ module can_top (
     logic         tx_frame_tx_bit;
     logic         rx_bit_curr;
     logic         stuffed_tx_bit;
-   // receiver outputs (internal wires to observe decoded fields)
-    logic [10:0]  rx_id_std_int;
-    logic [17:0]  rx_id_ext_int;
-    logic         rx_ide_int;
-    logic [3:0]   rx_dlc_int;
-    logic         rx_remote_req_int;
+    logic [10:0]  rx_id_std;
+    logic [17:0]  rx_id_ext;
+    logic         rx_ide;
+    logic [3:0]   rx_dlc;
+    logic         rx_remote_req;
     logic                                   bit_sample_point, bit_start_point;
-
-    // destuff control (tie low for now; later drive from destuffer/timing)
     logic         remove_stuff_bit_int;
     logic bit_stuffig_en;
     logic insert_stuff_bit;
+    logic tx_next;
 
-    type_reg2tim_s reg2tim_i; // register-to-timing struct (set in TB if needed)
+    type_reg2tim_s reg2tim_i; 
 
-    // CRC enable logic - stops when CRC field starts
     assign crc_en   = crc_active && sample_point && ~insert_stuff_bit;
     assign bit_stuffing = bit_stuffing_en;
     assign crc_init = start_tx;
-    assign tx_bit   = stuffed_tx_bit;     // CAN bus line driven by transmitter           // receiver reads what transmitter sends
+    assign tx_next = stuffed_tx_bit;
+    assign tx= stuffed_tx_bit ;     
     assign rx_bit_curr = sampled_bit;
     assign rx_bit_prev = sampled_bit_q;
     assign bit_sample_point = sample_point;
@@ -88,7 +93,7 @@ module can_top (
         .clk                (clk),
         .rst_n              (rst_n),
         .sample_point       (sample_point),
-        .bit_start_point(tx_point),
+        .bit_start_point    (tx_point),
         .start_tx           (start_tx),
         .ide                (ide),
         .id_std             (id_std),
@@ -123,23 +128,22 @@ module can_top (
         .stuffed_tx_bit(stuffed_tx_bit),
         .insert_stuff_bit(insert_stuff_bit)
     );
-    // Receiver
-    // connect all outputs to internal signals so top can observe them
-    assign remove_stuff_bit_int = 1'b0; // tie low for now (no external destuff)
+
+    assign remove_stuff_bit_int = 1'b0; 
 
     can_receiver u_receiver (
         .clk             (clk),
         .rst_n           (rst_n),
-        .rx_bit_curr     (stuffed_tx_bit),
+        .rx_bit_curr     (sampled_bit),
         .sample_point    (sample_point),
         .remove_stuff_bit(remove_stuff_bit_int),
         .rx_data_array   (rx_data_array),
         .rx_done_flag    (rx_done_flag),
-        .rx_id_std       (rx_id_std_int),
-        .rx_id_ext       (rx_id_ext_int),
-        .rx_ide          (rx_ide_int),
-        .rx_dlc          (rx_dlc_int),
-        .rx_remote_req   (rx_remote_req_int)
+        .rx_id_std       (rx_id_std),
+        .rx_id_ext       (rx_id_ext),
+        .rx_ide          (rx_ide),
+        .rx_dlc          (rx_dlc),
+        .rx_remote_req   (rx_remote_req)
     );
 
 
@@ -150,8 +154,8 @@ module can_top (
         .go_error_frame     (go_error_frame),
         .go_overload_frame  (go_overload_frame),
         .send_ack           (send_ack),
-        .rx                 (rx_bit_curr),
-        .tx                 (tx),
+        .rx                 (stuffed_tx_bit),
+        .tx                 (stuffed_tx_bit),
         .tx_next            (tx_next),
         .transmitting       (transmitting),
         .transmitter        (transmitter),

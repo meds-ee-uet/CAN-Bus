@@ -1,113 +1,113 @@
+// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Licensed under the Apache License, Version 2.0, see LICENSE file for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Description: tb_can_tx_priority — test can_tx_priority module 
+
+// Author: Ayesha Qadir
+// Date: 15 July, 2025
+
 `timescale 1ns/1ps
 
 module tb_can_tx_priority;
 
-  // Parameters
   localparam N = 4;
 
   // DUT signals
-  logic clk;
-  logic rst;
+  logic clk, rst, we, re, start_tx, full, empty;
+  logic [10:0] req_id, tx_id;
+  logic [3:0]  req_dlc, tx_dlc;
+  logic [7:0]  req_data [0:7], tx_data [0:7];
 
-  logic        we;
-  logic [10:0] req_id;
-  logic [3:0]  req_dlc;
-  logic [7:0]  req_data [0:7];
-
-  logic        re;
-  logic        start_tx;
-  logic [10:0] tx_id;
-  logic [3:0]  tx_dlc;
-  logic [7:0]  tx_data [0:7];
-  logic        full;
-  logic        empty;
+  // Error tracking
+  int error_count = 0;
 
   // DUT instantiation
-  can_tx_priority #(.N(N)) dut (
-    .clk(clk),
-    .rst(rst),
-    .we(we),
-    .req_id(req_id),
-    .req_dlc(req_dlc),
-    .req_data(req_data),
-    .re(re),
-    .start_tx(start_tx),
-    .tx_id(tx_id),
-    .tx_dlc(tx_dlc),
-    .tx_data(tx_data),
-    .full(full),
-    .empty(empty)
-  );
+  can_tx_priority #(.N(N)) dut (.*);
 
   // Clock generator
   initial clk = 0;
-  always #5 clk = ~clk; // 100 MHz clock
+  always #5 clk = ~clk;
 
-  // Task: write a frame
+  // --- Helper Tasks ---
+
   task write_frame(input [10:0] id, input [3:0] dlc);
     begin
       @(posedge clk);
-      we     = 1;
-      req_id = id;
-      req_dlc= dlc;
-      for (int i = 0; i < 8; i++) begin
-        req_data[i] = i;
-      end
+      #1; // Small delay to avoid race conditions
+      we = 1; req_id = id; req_dlc = dlc;
+      for (int i = 0; i < 8; i++) req_data[i] = i + id[7:0]; 
       @(posedge clk);
-      we = 0;
+      #1; we = 0;
     end
   endtask
 
-  // Task: read a frame (acknowledge TX done)
-  task read_frame;
+  // Self-testing task: Reads and checks if the ID matches expectation
+  task verify_tx(input [10:0] expected_id, input string msg);
     begin
       @(posedge clk);
+      #2; // Wait for logic to settle
+      if (tx_id !== expected_id) begin
+        $display("[ERROR] %s | Expected ID: %h, Got: %h", msg, expected_id, tx_id);
+        error_count++;
+      end else begin
+        $display("[PASS] %s | ID: %h", msg, tx_id);
+      end
+      // Acknowledge the frame
       re = 1;
       @(posedge clk);
-      re = 0;
+      #1; re = 0;
     end
   endtask
 
-  // Test sequence
+  // --- Test Suites ---
+
   initial begin
-    // Initialize
-    we = 0;
-    re = 0;
-    req_id = 0;
-    req_dlc = 0;
-    for (int i=0; i<8; i++) req_data[i] = 0;
-
-    // Apply reset
-    rst = 1;
-    repeat (2) @(posedge clk);
+    // Init
+    we = 0; re = 0; rst = 1;
+    repeat (5) @(posedge clk);
     rst = 0;
-    $display("[%0t] Reset deasserted", $time);
 
-    // Write some frames
-    write_frame(11'h300, 4'h8); // ID=0x300
-    write_frame(11'h200, 4'h8); // ID=0x200 (higher priority)
-    write_frame(11'h100, 4'h8); // ID=0x100 (highest priority)
-    write_frame(11'h400, 4'h8); // ID=0x400 (lowest priority)
+    $display("--- Starting Case 1: Priority Sorting ---");
+    write_frame(11'h300, 4'h8); // 1st: moves to tx_reg
+    write_frame(11'h500, 4'h8); // 2nd: moves to buffer[0]
+    write_frame(11'h400, 4'h8); // 3rd: moves to buffer[0], shifts 500 to buffer[1]
+    
+    verify_tx(11'h300, "Initial message"); 
+    verify_tx(11'h400, "Priority check 1");
+    verify_tx(11'h500, "Priority check 2");
 
-    // Observe TX
-    repeat (2) @(posedge clk);
-    $display("[%0t] TX: start=%0b id=%h dlc=%0d", $time, start_tx, tx_id, tx_dlc);
+    $display("--- Starting Case 2: Preemption ---");
+    // Write a low priority ID first
+    write_frame(11'h600, 4'h8); 
+    // Write a higher priority ID while 600 is waiting in tx_reg
+    write_frame(11'h100, 4'h8); 
+    
+    // 100 should now be in tx_reg because it is < 600
+    verify_tx(11'h100, "Preemption check");
+    verify_tx(11'h600, "Post-preemption check");
 
-    // Acknowledge first TX
-    read_frame();
-    $display("[%0t] After read: TX id=%h", $time, tx_id);
+    $display("--- Starting Case 3: Boundary Flags ---");
+    if (!empty) begin $display("[ERROR] Empty flag failed"); error_count++; end
+    
+    // Fill to capacity
+    write_frame(11'h10, 4'h1);
+    write_frame(11'h20, 4'h1);
+    write_frame(11'h30, 4'h1);
+    write_frame(11'h40, 4'h1);
+    write_frame(11'h50, 4'h1); // N=4 + 1 in tx_reg = 5 total capacity
 
-    read_frame();
-    $display("[%0t] After read: TX id=%h", $time, tx_id);
+    @(posedge clk); #1;
+    if (!full) begin $display("[ERROR] Full flag failed"); error_count++; end
+    else $display("[PASS] Full flag verified");
 
-    read_frame();
-    $display("[%0t] After read: TX id=%h", $time, tx_id);
-
-    read_frame();
-    $display("[%0t] After read: TX id=%h", $time, tx_id);
-
-    // Done
+    // Final Summary
     #50;
+    if (error_count == 0)
+      $display("\n**** TEST PASSED SUCCESSFULLY ****\n");
+    else
+      $display("\n**** TEST FAILED WITH %0d ERRORS ****\n", error_count);
+    
     $finish;
   end
 

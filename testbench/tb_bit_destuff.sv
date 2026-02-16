@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Description: A SystemVerilog testbench designed to verify the functionality of the can_bit_destuffer module.
-// It ensures the module correctly detects and flags the stuffed bit (6th identical bit) inserted 
+// It ensures the module correctly detects and flags the stuffed bit  inserted 
 // during transmission, enabling proper CAN frame de-stuffing on the receiver side.
 //
 // Author: Nimrajavaid

@@ -47,7 +47,6 @@ module can_top (
     output logic        rx_done_flag,
     output logic        arbitration_active
 );
-    // internal signals
     logic         crc_en;
     logic         bit_stuffing_en;
     logic         crc_init;

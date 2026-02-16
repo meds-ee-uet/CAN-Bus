@@ -14,7 +14,7 @@ module can_top (
     input  logic        start_tx,
     input  logic        ide,
     input  logic [10:0] id_std,       
-    input  logic [28:0] id_ext,
+    input  logic [17:0] id_ext,
     input  logic        rtr,
     input  logic [3:0]  dlc,
     input  logic [7:0]  tx_data_0,
@@ -64,7 +64,9 @@ module can_top (
     logic                                   bit_sample_point, bit_start_point;
     logic         remove_stuff_bit_int;
     logic bit_stuffig_en;
+    logic bit_de_stuffing_en;
     logic insert_stuff_bit;
+    logic insert_de_stuff_bit;
     logic tx_next;
 
     type_reg2tim_s reg2tim_i; 
@@ -112,7 +114,7 @@ module can_top (
         .calculated_crc     (calculated_crc),
         .insert_stuff_bit    (insert_stuff_bit),
         .crc_active         (crc_active),
-        .tx_bit             (tx_frame_tx_bit),
+        .tx_bit             (stuffed_tx_bit),
         .tx_done            (tx_done),
         .arbitration_active (arbitration_active),
         .bit_stuffing_en    (bit_stuffing_en)
@@ -129,7 +131,17 @@ module can_top (
         .insert_stuff_bit(insert_stuff_bit)
     );
 
-    assign remove_stuff_bit_int = 1'b0; 
+
+    can_bit_de_stuffer u_de_stuffer (
+    	.clk               (clk),
+    	.rst_n             (rst_n),
+    	.reset_mode        (rx_idle),          
+    	.bit_start_point   (sample_point),     
+    	.rx_bit_curr       (sampled_bit),
+    	.rx_bit_prev       (sampled_bit_q),
+    	.bit_de_stuffing_en(bit_stuffing_en),  
+    	.remove_stuff_bit  (remove_stuff_bit_int)
+    );
 
     can_receiver u_receiver (
         .clk             (clk),
@@ -143,6 +155,7 @@ module can_top (
         .rx_id_ext       (rx_id_ext),
         .rx_ide          (rx_ide),
         .rx_dlc          (rx_dlc),
+        .bit_de_stuffing_en (bit_de_stuffing_en),
         .rx_remote_req   (rx_remote_req)
     );
 

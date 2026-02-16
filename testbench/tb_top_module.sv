@@ -10,22 +10,16 @@
 `include "can_defs.svh"
 
 module tb_can_top;
-
-    // Clock and reset
     logic clk;
     logic rst_n;
-
-    // CAN transmit inputs
     logic start_tx;
     logic ide;
     logic [10:0] id_std;
-    logic [28:0] id_ext;
+    logic [17:0] id_ext;
     logic rtr;
     logic [3:0]  dlc;
     logic [7:0]  tx_data_0, tx_data_1, tx_data_2, tx_data_3;
     logic [7:0]  tx_data_4, tx_data_5, tx_data_6, tx_data_7;
-
-    // Timing/control signals
     logic go_error_frame;
     logic go_overload_frame;
     logic send_ack;
@@ -48,8 +42,10 @@ module tb_can_top;
     logic hard_sync;
     logic arbitration_active;
     logic rx_done_flag;
-
-    // DUT instantiation
+    integer pass_count = 0;
+    integer fail_count = 0;
+    integer i;
+    logic [7:0] expected [0:7];
     can_top dut (
         .clk                (clk),
         .rst_n              (rst_n),
@@ -89,30 +85,52 @@ module tb_can_top;
         .rx_done_flag       (rx_done_flag),
         .arbitration_active (arbitration_active)
     );
-
-    // Clock
     initial clk = 0;
     always #5 clk = ~clk;
+    task pass(string msg);
+        begin
+            pass_count++;
+            $display(" PASS: %s", msg);
+        end
+    endtask
 
-    // Stimulus
+    task fail(string msg);
+        begin
+            fail_count++;
+            $display(" FAIL: %s", msg);
+        end
+    endtask
+
+    task summary;
+        begin
+            $display("\n===============================");
+            $display(" TEST SUMMARY ");
+            $display(" PASSES = %0d", pass_count);
+            $display(" FAILS  = %0d", fail_count);
+            $display("===============================\n");
+
+            if (fail_count == 0)
+                $display(" ALL TESTS PASSED");
+            else
+                $display("SOME TESTS FAILED");
+        end
+    endtask
     initial begin
         rst_n = 0;
         start_tx = 0;
-        ide = 0;
-        id_std = 11'b0101010111;
-        id_ext = 29'h1ABCDEF;
+        ide = 1;
+        id_std = 11'b1111110111;
+        id_ext = 18'h1ABCD;
         rtr = 0;
-        dlc = 4'b0100;
-
-        tx_data_0 = 8'h55;
+        dlc = 4'b1000;
+        tx_data_0 = 8'h7f;
         tx_data_1 = 8'h55;
-        tx_data_2 = 8'h55;
+        tx_data_2 = 8'h7f;
         tx_data_3 = 8'h55;
         tx_data_4 = 8'h55;
         tx_data_5 = 8'h66;
         tx_data_6 = 8'h77;
         tx_data_7 = 8'h88;
-
         go_error_frame = 0;
         go_overload_frame = 0;
         send_ack = 0;
@@ -123,21 +141,17 @@ module tb_can_top;
         go_tx = 0;
         go_rx_inter = 0;
         node_error_passive = 0;
-
         #50 rst_n = 1;
-
-        // CAN timing
         dut.reg2tim_i.tseg1 = 4;
         dut.reg2tim_i.tseg2 = 3;
-        dut.reg2tim_i.sjw = 1;
+        dut.reg2tim_i.sjw   = 1;
         dut.reg2tim_i.baud_prescaler = 1;
 
         #50;
-
         start_tx = 1;
         #500 start_tx = 0;
-        #20;
 
+        #20;
         transmitting = 1;
         transmitter  = 1;
         go_tx        = 1;
@@ -145,47 +159,56 @@ module tb_can_top;
         #40;
         rx_idle = 0;
     end
-
-    // Debug monitors (unchanged)
     initial begin
-        $display("Time\tTX_BIT\tRX_BIT\tSAMPLE_PT\tCRC\tTX_DONE\tState");
-        $monitor("%0t\t%b\t%b\t%b\t%h\t%b\t%s",
-                $time, tx_bit, dut.rx_bit_curr, sample_point, calculated_crc, tx_done,
-                dut.u_transmitter.tx_state_ff.name());
+        @(posedge rst_n);
+        if (tx_done == 0)
+            pass("TX_DONE low after reset");
+        else
+            fail("TX_DONE high after reset");
     end
-
-    always @(posedge clk) begin
-        if (sample_point)
-            $display("[%0t] SAMPLE: State=%s Bit=%b", 
-                     $time, dut.u_transmitter.tx_state_ff.name(), tx_bit);
-        if (hard_sync)
-            $display("[%0t] HARD_SYNC!", $time);
+    initial begin
+        wait(start_tx);
+        @(posedge clk);
+        wait(tx_bit === 0 || tx_bit === 1);
+        pass("TX activity detected");
     end
+    initial begin
+        fork
+            begin
+                wait(tx_done);
+                pass("TX_DONE asserted");
+            end
+            begin
+                #700_000_000;
+                fail("Timeout waiting for TX_DONE");
+            end
+        join
+    end
+    initial begin
+        wait(rx_done_flag);
+        $display("[%0t] RX_DONE flagged, checking received data...", $time);
+        expected[0] = tx_data_0;
+        expected[1] = tx_data_1;
+        expected[2] = tx_data_2;
+        expected[3] = tx_data_3;
+        expected[4] = tx_data_4;
+        expected[5] = tx_data_5;
+        expected[6] = tx_data_6;
+        expected[7] = tx_data_7;
 
-    // VCD
+        for (i=0; i<8; i=i+1) begin
+            if (dut.rx_data_array[i] === expected[i])
+                pass($sformatf("RX byte %0d matched: 0x%0h", i, expected[i]));
+            else
+                fail($sformatf("RX byte %0d mismatch: expected 0x%0h, got 0x%0h",
+                               i, expected[i], dut.rx_data_array[i]));
+        end
+        summary();
+        #100 $finish;
+    end
     initial begin
         $dumpfile("can_top_tb.vcd");
         $dumpvars(0, tb_can_top);
-
-        @(posedge rst_n);
-        $display("Reset deasserted. Simulation started...");
-
-        fork
-            begin : TX_DONE_MONITOR
-                wait (tx_done == 1);   // <<-- ONLY CHANGE YOU ASKED FOR
-                $display("[%0t] ✅ TX_DONE asserted! Transmission complete!", $time);
-                #200;
-                disable TIMEOUT;
-                $finish;
-            end
-
-            begin : TIMEOUT
-                #700_000_000;
-                $display("[%0t] ❌ TIMEOUT: TX_DONE not seen!", $time);
-                disable TX_DONE_MONITOR;
-                $finish;
-            end
-        join
     end
 
 endmodule

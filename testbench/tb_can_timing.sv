@@ -2,12 +2,8 @@
 `include "can_defs.svh"
 
 module tb_can_timing;
-
-  // Clock & reset
   logic clk;
   logic rst_n;
-
-  // DUT inputs
   logic go_error_frame, go_overload_frame, send_ack;
   logic rx, tx, tx_next;
   logic transmitting, transmitter;
@@ -15,15 +11,11 @@ module tb_can_timing;
   logic node_error_passive;
 
   type_reg2tim_s reg2tim_i;
-
-  // DUT outputs
   logic sample_point;
   logic sampled_bit;
   logic sampled_bit_q;
   logic tx_point;
   logic hard_sync;
-
-  // Instantiate DUT
   can_timing dut (
     .rst_n(rst_n),
     .clk(clk),
@@ -46,19 +38,14 @@ module tb_can_timing;
     .tx_point(tx_point),
     .hard_sync(hard_sync)
   );
-
-  // Clock generation
-  always #5 clk = ~clk;  // 100 MHz
-
-  // Stimulus
+  always #5 clk = ~clk;  
   initial begin
-    // Default
     clk = 0;
     rst_n = 0;
     go_error_frame = 0;
     go_overload_frame = 0;
     send_ack = 0;
-    rx = 1; // recessive (bus idle)
+    rx = 1; 
     tx = 1;
     tx_next = 1;
     transmitting = 0;
@@ -73,11 +60,7 @@ module tb_can_timing;
     reg2tim_i.tseg2 = 3'd3;          // 3 TQ
     reg2tim_i.sjw   = 3'd2;          // SJW = 2
     reg2tim_i.baud_prescaler = 8'd1; // simple baud divider
-
-    // Reset release
     #50 rst_n = 1;
-
-    // Wait idle
     #100;
 
     // 1. HARD SYNC test: Start Of Frame (SOF)
@@ -99,7 +82,7 @@ module tb_can_timing;
     rx_idle = 0;
     rx_inter = 0;
     #100;
-    rx <= 1;  // force an unexpected recessive edge
+    rx <= 1;  
     #200;
 
     // 4. Drive TX

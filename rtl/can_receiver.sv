@@ -12,13 +12,14 @@ module can_receiver(
     input  logic        rst_n,
     input  logic        rx_bit_curr,
     input  logic        sample_point,
-    input  logic        remove_stuff_bit, // external destuff detect
+    input  logic        remove_stuff_bit, 
     output logic [7:0]  rx_data_array [0:7],
     output logic        rx_done_flag,
     output logic [10:0] rx_id_std,
     output logic [17:0] rx_id_ext,
     output logic        rx_ide,
     output logic [3:0]  rx_dlc,
+    output logic bit_de_stuffing_en,
     output logic        rx_remote_req
 );
 
@@ -39,6 +40,7 @@ module can_receiver(
     assign rx_id_ext    = rx_frame_ff.id_ext;
     assign rx_ide       = rx_frame_ff.ide;
     assign rx_dlc       = rx_frame_ff.dlc;
+    assign bit_de_stuffing_en = bit_de_stuffing_ff;
     assign rx_remote_req = ((~rx_frame_ff.ide) & rx_frame_ff.rtr1) |
                            ( rx_frame_ff.ide & rx_frame_ff.rtr2);
 

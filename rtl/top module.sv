@@ -47,6 +47,7 @@ module can_top (
     output logic        rx_done_flag,
     output logic        arbitration_active
 );
+    // internal signals
     logic         crc_en;
     logic         bit_stuffing_en;
     logic         crc_init;
@@ -74,7 +75,7 @@ module can_top (
     assign bit_stuffing = bit_stuffing_en;
     assign crc_init = start_tx;
     assign tx_next = stuffed_tx_bit;
-    assign tx= stuffed_tx_bit ;     
+    assign tx_bit= stuffed_tx_bit ;     
     assign rx_bit_curr = sampled_bit;
     assign rx_bit_prev = sampled_bit_q;
     assign bit_sample_point = sample_point;
@@ -113,7 +114,7 @@ module can_top (
         .calculated_crc     (calculated_crc),
         .insert_stuff_bit    (insert_stuff_bit),
         .crc_active         (crc_active),
-        .tx_bit             (stuffed_tx_bit),
+        .tx_bit             (tx_frame_tx_bit),
         .tx_done            (tx_done),
         .arbitration_active (arbitration_active),
         .bit_stuffing_en    (bit_stuffing_en)
@@ -134,11 +135,11 @@ module can_top (
     can_bit_de_stuffer u_de_stuffer (
     	.clk               (clk),
     	.rst_n             (rst_n),
-    	.reset_mode        (rx_idle),          
-    	.bit_start_point   (sample_point),     
+    	.reset_mode        (rx_idle),          // reset counter in IDLE / SOF
+    	.bit_start_point   (sample_point),     // count at sampling boundary
     	.rx_bit_curr       (sampled_bit),
     	.rx_bit_prev       (sampled_bit_q),
-    	.bit_de_stuffing_en(bit_stuffing_en),  
+    	.bit_de_stuffing_en(bit_stuffing_en),  // same enable as stuffing
     	.remove_stuff_bit  (remove_stuff_bit_int)
     );
 

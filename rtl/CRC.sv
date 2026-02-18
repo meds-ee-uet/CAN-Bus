@@ -23,9 +23,8 @@ module can_crc15_gen (
   always_comb begin
     next_crc = crc_reg;
     feedback = data_bit ^ crc_reg[14];  
-
-    if (crc_en) begin
-      next_crc[14] = crc_reg[13];
+    if (crc_en ) begin
+      next_crc[14] = crc_reg[13] ^ feedback;
       next_crc[13] = crc_reg[12];
       next_crc[12] = crc_reg[11];
       next_crc[11] = crc_reg[10];
